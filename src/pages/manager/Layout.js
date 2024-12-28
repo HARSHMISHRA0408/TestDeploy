@@ -43,7 +43,7 @@ const Layout = ({ children }) => {
                 href="/manager/Questions/AllQuestions"
                 className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
               >
-                Question's
+                Question&apos;s
               </Link>
             </li>
             <li>
@@ -75,7 +75,7 @@ const Layout = ({ children }) => {
                 href="/manager/Marks"
                 className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
               >
-                Difficulty Level, Time & Marks
+                Difficulty Level ||  Time & Marks
               </Link>
             </li>
             <li>
@@ -83,7 +83,7 @@ const Layout = ({ children }) => {
                 href="#"
                 className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
               >
-                Test Request's
+                Test Request&apos;s
               </Link>
             </li>
             <li>
