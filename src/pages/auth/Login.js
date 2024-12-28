@@ -1,21 +1,54 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setError("Please fill in all fields.");
       return;
     }
     setError("");
-    console.log("Email:", email);
-    console.log("Password:", password);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/userLogin`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+
+    const res = await response.json();
+    if (res.success) {
+      document.cookie = `token=${res.token}; path=/;`;
+      const role = res.user.role;
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("userEmail", email);
+      // localStorage.setItem("KnowledgeArea", knowledgeArea);
+      // localStorage.setItem("category", category);
+
+      // Redirect based on user role
+      if (role === "admin") {
+        router.push("/admin/Dashboard");
+      } else if (role === "employee") {
+        router.push("/candidate/Dashboard");
+      } else if (role === "manager") {
+        router.push("/manager/Dashboard");
+      }
+    } else {
+      setError("Incorrect email or password.");
+      alert("Fill Details Correctly");
+    }
   };
 
   return (
@@ -26,12 +59,12 @@ function Login() {
       <div className="flex rounded-lg overflow-hidden shadow-lg bg-white w-3/4 h-[600px] p-6">
         <div className="flex items-center justify-center w-1/2 bg-white">
           <Image
-            src="/login.svg" // Update with the correct image path
+            src="/login.svg"
             alt="Company Logo"
-            layout="responsive" // Use responsive layout for scaling
-            width={200} // Specify width for the image
-            height={200} // Specify height for the image
-            className="object-contain p-4" // Adjust object-fit property
+            layout="responsive"
+            width={200}
+            height={200}
+            className="object-contain p-4"
           />
         </div>
         <div className="flex items-center justify-center w-1/2 p-6">

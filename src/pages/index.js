@@ -1,4 +1,5 @@
 import localFont from "next/font/local";
+import Login from "./auth/Login";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -13,6 +14,8 @@ const geistMono = localFont({
 
 export default function Home() {
   return (
-   <div>Hey Viyal</div>
+   <div>
+    <Login/> 
+   </div>
   );
 }

@@ -25,3 +25,13 @@ body {
     text-wrap: balance;
   }
 }
+
+/* globals.css */
+#nprogress .bar {
+  background: #29d; /* Change this to your preferred color */
+  height: 4px;      /* Adjust the height of the top loader */
+}
+
+#nprogress .spinner {
+  display: none;    /* Hide the spinner if you only want the top bar */
+}

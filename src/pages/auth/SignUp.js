@@ -1,16 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 function SignUp() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [knowledgeArea, setKnowledgeArea] = useState(""); // State for knowledge area
+  const [category, setCategory] = useState(""); // State for category
   const [error, setError] = useState("");
+  const [knowledgeAreas, setKnowledgeAreas] = useState([]); // Initialize as an empty array
+  const [categories, setCategories] = useState([]);
 
-  const handleSubmit = (e) => {
+  // Fetch knowledge areas and categories from the API
+  // Fetch knowledge areas and categories from the API
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch("/api/knowledgeAreas");
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          setKnowledgeAreas(result.data); // Use the data array directly
+        } else {
+          console.error("Unexpected data format:", result);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Update categories when the knowledge area changes
+  useEffect(() => {
+    if (knowledgeArea) {
+      const selectedArea = knowledgeAreas.find(
+        (area) => area.name === knowledgeArea
+      );
+      setCategories(selectedArea ? selectedArea.categories : []);
+    } else {
+      setCategories([]);
+    }
+  }, [knowledgeArea, knowledgeAreas]);
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...options];
+    newOptions[index] = value;
+    setOptions(newOptions);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !knowledgeArea || !category) {
       setError("Please fill in all fields.");
       return;
     }
@@ -18,6 +63,34 @@ function SignUp() {
     console.log("Name:", name);
     console.log("Email:", email);
     console.log("Password:", password);
+    console.log("Knowledge Area:", knowledgeArea);
+    console.log("Category:", category);
+    //handling form submission or API call here
+
+    const response = await fetch("/api/userSignUp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        password: password,
+        knowledgeArea: knowledgeArea,
+        category: category,
+      }),
+    });
+
+    const res = await response.json();
+    if (res.success) {
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("userEmail", email);
+      router.push("/candidate/Dashboard");
+    }
+
+    // const handlechange =(e)=>{
+
+    // }
   };
 
   return (
@@ -87,6 +160,51 @@ function SignUp() {
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
+
+            {/* Knowledge Area dropdown */}
+            <div>
+              <label className="block text-gray-700 font-bold mb-2">
+                Knowledge Area:
+              </label>
+              <select
+                value={knowledgeArea}
+                onChange={(e) => setKnowledgeArea(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="" disabled>
+                  Select Knowledge Area
+                </option>
+                {knowledgeAreas.map((area) => (
+                  <option key={area._id} value={area.name}>
+                    {area.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Category dropdown */}
+            <div className="m-3">
+              <label className="block text-gray-700 font-bold mb-2">
+                Category:
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="" disabled>
+                  Select Category
+                </option>
+                {categories.map((cat) => (
+                  <option key={cat._id || cat.name} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               type="submit"
               className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
