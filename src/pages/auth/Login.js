@@ -18,7 +18,7 @@ function Login() {
     setError("");
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/userLogin`,
+      `/api/userLogin`,
       {
         method: "POST",
         headers: {
