@@ -1,14 +1,19 @@
+
 import { useEffect, useState } from "react";
 import Layout from "./Layout";
+import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
 
 export default function FeedbackPage() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // Loading state
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function fetchFeedbacks() {
+      setLoading(true); // Start loading
+
       try {
         const response = await fetch("/api/feedback/getfeedbacks");
         if (!response.ok) {
@@ -19,6 +24,8 @@ export default function FeedbackPage() {
         setFilteredFeedbacks(result.data || []);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setLoading(false); // Stop loading
       }
     }
 
@@ -55,12 +62,27 @@ export default function FeedbackPage() {
           />
         </div>
 
-        {error ? (
-          <p className="text-red-500 text-center font-medium">Error: {error}</p>
-        ) : (
+        {/* Centered Loading Animation */}
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <ClipLoader size={50} color="#3498db" loading={loading} />
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-500 text-center font-medium">
+            Error: {error}
+          </p>
+        )}
+
+        {/* Feedback List */}
+        {!loading && !error && (
           <div className="space-y-6">
             {filteredFeedbacks.length === 0 ? (
-              <p className="text-gray-600 text-center text-lg">No feedbacks available</p>
+              <p className="text-gray-600 text-center text-lg">
+                No feedbacks available
+              </p>
             ) : (
               filteredFeedbacks.map((feedback) => (
                 <div

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import Layout from "./Layout";
+import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
 
 function UsersPage() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({
@@ -17,12 +19,14 @@ function UsersPage() {
 
   // Fetch users on component mount
   const fetchUsers = async () => {
+    setLoading(true); // Start loading
     const res = await fetch("/api/user");
     const data = await res.json();
     if (data.success) {
       setUsers(data.data);
       setFilteredUsers(data.data); // Initialize filtered users
     }
+    setLoading(false); // Stop loading
   };
 
   useEffect(() => {
@@ -101,6 +105,12 @@ function UsersPage() {
           className="p-2 w-80 border border-gray-300 rounded-lg"
         />
       </div>
+      {/* Centered Loading Animation */}
+      {loading && (
+          <div className="flex justify-center items-center h-64">
+            <ClipLoader size={50} color="#3498db" loading={loading} />
+          </div>
+        )}
 
       {/* User List */}
       <div className="space-y-4">

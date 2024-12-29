@@ -266,7 +266,7 @@ useEffect(() => {
   //     return;
   // };
 
-  const submitResults = () => {
+  const submitResults = async () => {
     const email = localStorage.getItem("userEmail");
     if (!email) {
       alert("Error: User not logged in.");
@@ -274,7 +274,7 @@ useEffect(() => {
     }
   
     // Save the quiz result
-    fetch("/api/results/saveresult", {
+    await fetch("/api/results/saveresult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, score }),
