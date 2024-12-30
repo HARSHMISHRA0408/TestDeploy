@@ -112,6 +112,7 @@ function Login() {
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
+            
             <button
               type="submit"
               className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
@@ -119,6 +120,17 @@ function Login() {
             >
               {loading ? "Loading..." : "Submit"}
             </button>
+            <div className="mt-4 text-center">
+              <p>
+                Forgot Password?{" "}
+                <Link
+                  href="/auth/ForgotPassword"
+                  className="text-blue-500 hover:underline"
+                >
+                  Reset Password
+                </Link>
+              </p>
+            </div>
             <div className="mt-4 text-center">
               <p>
                 Don&apos;t have an account?{" "}
