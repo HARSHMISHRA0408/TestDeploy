@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import Router, { useRouter } from "next/router";
+import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
 
     try {
       const response = await fetch("/api/auth/forgotPassword", {
@@ -24,10 +27,16 @@ function ForgotPassword() {
       console.error(err);
       setError("Something went wrong.");
     }
+    finally { setLoading(false); } // Stop loading
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      {loading && (
+          <div className="flex justify-center items-center h-64">
+            <ClipLoader size={50} color="#3498db" loading={loading} />
+          </div>
+        )}
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg"
