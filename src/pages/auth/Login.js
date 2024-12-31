@@ -34,6 +34,7 @@ function Login() {
       if (res.success) {
         document.cookie = `token=${res.token}; path=/;`;
         const role = res.user.role;
+        console.log(document.cookie);
         localStorage.setItem("token", res.token);
         localStorage.setItem("userEmail", email);
 

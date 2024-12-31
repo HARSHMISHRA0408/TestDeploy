@@ -61,45 +61,48 @@
 // pages/admin/dashboard.js
 import Layout from './Layout';
 import jwt from "jsonwebtoken";
+import { parse } from "cookie";
+
 
 // Server-side authentication to restrict access to admin users
+// Server-side authentication to restrict access to admin users
 export async function getServerSideProps({ req }) {
-  const token = req.cookies.token;
-
-  // Redirect to login if token is missing
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/auth/Login",
-        permanent: false,
-      },
-    };
-  }
+  const redirectToLogin = {
+    redirect: {
+      destination: "/auth/Login",
+      permanent: false,
+    },
+  };
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Parse cookies manually to ensure proper extraction
+    const cookies = parse(req.headers.cookie || "");
+    const token = cookies.token;
 
-    // Check if the user is an admin
-    if (decoded.role !== "admin") {
-      return {
-        redirect: {
-          destination: "/auth/Login",
-          permanent: false,
-        },
-      };
+    // Redirect if token is missing
+    if (!token || token.trim() === "") {
+      console.error("No token found in cookies");
+      return redirectToLogin;
     }
 
-    // If the role is admin, allow access
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the role is "manager"
+    if (decoded.role !== "admin") {
+      console.error(`Unauthorized role: ${decoded.role}`);
+      return redirectToLogin;
+    }
+
+    // Token is valid, and role is "manager"
     return {
-      props: {}, // Pass props if needed
-    };
-  } catch (error) {
-    return {
-      redirect: {
-        destination: "/auth/Login",
-        permanent: false,
+      props: {
+        user: decoded, // Pass decoded user info if needed
       },
     };
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return redirectToLogin;
   }
 }
 

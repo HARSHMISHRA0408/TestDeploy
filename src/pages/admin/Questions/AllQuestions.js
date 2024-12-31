@@ -2,6 +2,49 @@ import { useRouter } from "next/router";
 import Layout from "../Layout"; // Adjust the path if needed
 import { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
+import { parse } from "cookie";
+import jwt from "jsonwebtoken";
+
+// Server-side authentication to restrict access to admin users
+export async function getServerSideProps({ req }) {
+  const redirectToLogin = {
+    redirect: {
+      destination: "/auth/Login",
+      permanent: false,
+    },
+  };
+
+  try {
+    // Parse cookies manually to ensure proper extraction
+    const cookies = parse(req.headers.cookie || "");
+    const token = cookies.token;
+
+    // Redirect if token is missing
+    if (!token || token.trim() === "") {
+      console.error("No token found in cookies");
+      return redirectToLogin;
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the role is "manager"
+    if (decoded.role !== "admin") {
+      console.error(`Unauthorized role: ${decoded.role}`);
+      return redirectToLogin;
+    }
+
+    // Token is valid, and role is "manager"
+    return {
+      props: {
+        user: decoded, // Pass decoded user info if needed
+      },
+    };
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return redirectToLogin;
+  }
+}
 
 function AllQuestions({ initialQuestions = [] }) {
   const router = useRouter();

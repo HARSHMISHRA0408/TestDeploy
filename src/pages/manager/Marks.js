@@ -1,5 +1,49 @@
 import { useState, useEffect } from 'react';
 import Layout from "./Layout";
+import { parse } from "cookie";
+import jwt from "jsonwebtoken";
+
+
+// Server-side authentication to restrict access to admin users
+export async function getServerSideProps({ req }) {
+  const redirectToLogin = {
+    redirect: {
+      destination: "/auth/Login",
+      permanent: false,
+    },
+  };
+
+  try {
+    // Parse cookies manually to ensure proper extraction
+    const cookies = parse(req.headers.cookie || "");
+    const token = cookies.token;
+
+    // Redirect if token is missing
+    if (!token || token.trim() === "") {
+      console.error("No token found in cookies");
+      return redirectToLogin;
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the role is "manager"
+    if (decoded.role !== "manager") {
+      console.error(`Unauthorized role: ${decoded.role}`);
+      return redirectToLogin;
+    }
+
+    // Token is valid, and role is "manager"
+    return {
+      props: {
+        user: decoded, // Pass decoded user info if needed
+      },
+    };
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return redirectToLogin;
+  }
+}
 
 function MarksPage() {
   const [marks, setMarks] = useState([]);
@@ -58,23 +102,25 @@ function MarksPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4">Manage Marks</h1>
+    <div className="container mx-auto py-10 px-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Manage Marks</h1>
 
-      {message && <p className="text-green-600 mb-4">{message}</p>}
+      {message && (
+        <p className={`text-center mb-6 ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>{message}</p>
+      )}
 
       {/* Marks List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {marks.map((mark) => (
-          <div key={mark._id} className="border p-4 rounded-lg flex justify-between items-center">
+          <div key={mark._id} className="bg-white shadow rounded-lg p-6 flex flex-col justify-between">
             <div>
-              <p><strong>Level:</strong> {mark.level}</p>
-              <p><strong>Time:</strong> {mark.time}</p>
-              <p><strong>Marks:</strong> {mark.marks}</p>
+              <p className="text-lg font-semibold text-gray-700 mb-2">Level: <span className="text-gray-800">{mark.level}</span></p>
+              <p className="text-gray-600 mb-1">Time: <span className="font-medium text-gray-800">{mark.time} mins</span></p>
+              <p className="text-gray-600">Marks: <span className="font-medium text-gray-800">{mark.marks}</span></p>
             </div>
             <button
               onClick={() => handleEdit(mark)}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all"
             >
               Edit
             </button>
@@ -84,44 +130,46 @@ function MarksPage() {
 
       {/* Edit Form */}
       {editingMark && (
-        <form onSubmit={handleSubmit} className="mt-8 p-4 border rounded-lg">
-          <h2 className="text-xl font-bold mb-4">Edit Mark</h2>
+        <form onSubmit={handleSubmit} className="mt-10 bg-white shadow rounded-lg p-6 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Edit Mark</h2>
           <div className="mb-4">
-            <label className="block text-gray-700">Level:</label>
-            <p className="w-full p-2 border rounded bg-gray-100">{form.level}</p>
+            <label className="block text-gray-700 font-medium mb-2">Level:</label>
+            <p className="w-full p-2 border rounded bg-gray-100 text-gray-700">{form.level}</p>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Time:</label>
+            <label className="block text-gray-700 font-medium mb-2">Time (mins):</label>
             <input
               type="number"
               name="time"
               value={form.time}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Marks:</label>
+            <label className="block text-gray-700 font-medium mb-2">Marks:</label>
             <input
               type="number"
               name="marks"
               value={form.marks}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
               required
             />
           </div>
-          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-            Save Changes
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditingMark(null)}
-            className="ml-2 bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Cancel
-          </button>
+          <div className="flex justify-between">
+            <button type="submit" className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all">
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditingMark(null)}
+              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       )}
     </div>

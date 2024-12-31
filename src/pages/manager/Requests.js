@@ -29,7 +29,7 @@ export async function getServerSideProps({ req }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Check if the role is "manager"
-    if (decoded.role !== "admin") {
+    if (decoded.role !== "manager") {
       console.error(`Unauthorized role: ${decoded.role}`);
       return redirectToLogin;
     }

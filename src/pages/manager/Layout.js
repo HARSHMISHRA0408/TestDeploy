@@ -1,7 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
-import Router, { useRouter } from "next/router";
+import Router from "next/router";
 import React from "react";
+import { parse } from "cookie";
+import jwt from "jsonwebtoken";
+
+
+// Server-side authentication to restrict access to admin users
+export async function getServerSideProps({ req }) {
+  const redirectToLogin = {
+    redirect: {
+      destination: "/auth/Login",
+      permanent: false,
+    },
+  };
+
+  try {
+    // Parse cookies manually to ensure proper extraction
+    const cookies = parse(req.headers.cookie || "");
+    const token = cookies.token;
+
+    // Redirect if token is missing
+    if (!token || token.trim() === "") {
+      console.error("No token found in cookies");
+      return redirectToLogin;
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the role is "manager"
+    if (decoded.role !== "manager") {
+      console.error(`Unauthorized role: ${decoded.role}`);
+      return redirectToLogin;
+    }
+
+    // Token is valid, and role is "manager"
+    return {
+      props: {
+        user: decoded, // Pass decoded user info if needed
+      },
+    };
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return redirectToLogin;
+  }
+}
 
 const Layout = ({ children }) => {
   const handleLogout = () => {
@@ -9,104 +53,103 @@ const Layout = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
 
-    // Optionally, clear any other user-related data
-
     // Redirect to the login page or home page
-    Router.push("/auth/Login"); // Adjust the path as necessary
+    Router.push("/auth/Login");
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="fixed w-64 h-full bg-blue-900 text-white p-5">
-        <nav>
+      <aside className="fixed w-64 h-full bg-blue-800 text-white flex flex-col p-5 shadow-lg">
+        <div className="flex flex-col items-center mb-8">
+          <Image
+            src="/Images/admin.webp"
+            alt="Admin Profile"
+            width={120}
+            height={120}
+            className="rounded-full border-4 border-gray-300 shadow-lg"
+          />
+          <h1 className="text-lg font-bold mt-4">Admin Panel</h1>
+        </div>
+        <nav className="flex-1">
           <ul className="space-y-4">
-            <li>
-              <Image
-                src="/Images/admin.webp" // Path to your image file
-                alt="An example image"
-                width={200} // Set image width
-                height={200} // Set image height
-                className="rounded-full border-2 border-gray-300 p-5"
-              />
-            </li>
             <li>
               <Link
                 href="/manager/Result"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Result
+                <span>Result</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/manager/Questions/AllQuestions"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Question&apos;s
+                <span>Questions</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/manager/users"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Users
+                <span>Users</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/manager/Questions/KnowledgeArea"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Knowledge Area
+                <span>Knowledge Area</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/manager/feedback"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Feedbacks
+                <span>Feedbacks</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/manager/Marks"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Difficulty Level ||  Time & Marks
+                <span>Difficulty Level & Marks</span>
               </Link>
             </li>
             <li>
               <Link
-                href="#"
-                className="block w-full bg-blue-700 py-2 px-4 rounded hover:bg-blue-600 text-left"
+                href="/manager/Requests"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                Test Request&apos;s
+                <span>Test Requests</span>
               </Link>
             </li>
             <li>
               <button
                 onClick={handleLogout}
-                className="p-2 block w-full bg-red-500 text-white rounded hover:bg-red-600 transition duration-200 "
+                className="flex items-center space-x-2 bg-red-500 py-2 px-4 rounded-md hover:bg-red-600 transition duration-200 w-full text-left"
               >
-                Logout
+                <span>Logout</span>
               </button>
             </li>
           </ul>
         </nav>
+        <footer className="mt-8 text-center text-sm text-gray-300">
+          &copy; 2024 Admin Dashboard
+        </footer>
       </aside>
 
-      {/* Main content area */}
-      <div className="flex-1 ml-64 p-6">
-        <header className="bg-gray-100 p-4 shadow-md mb-4">
-          <h2 className="text-xl font-semibold">Manager Dashboard</h2>
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64 bg-white shadow-lg">
+        <header className="bg-gray-100 p-6 shadow-md">
+          <h2 className="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
         </header>
-
-        <main className="overflow-auto">
-          {children} {/* Render the page content here */}
-        </main>
+        <main className="p-6">{children}</main>
       </div>
     </div>
   );

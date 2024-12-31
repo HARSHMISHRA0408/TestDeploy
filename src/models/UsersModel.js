@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema({
     enum: ["employee", "admin", "manager", "guest"], // Added 'guest' role for unregistered or trial users
     default: "employee", // Default role is 'employee'
   },
-  testStatus: {
+  test: {
     type: String,
     enum: ["allowed", "pending", "notallowed", "rejected"], // Restrict to predefined statuses
     default: "allowed", // Default status is 'allowed'

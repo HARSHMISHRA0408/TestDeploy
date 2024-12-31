@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Layout from "../Layout";
 
+// import { Router } from "next/router";
+
 export default function AddQuestion() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
@@ -14,26 +16,25 @@ export default function AddQuestion() {
   const [categories, setCategories] = useState([]);
 
   // Fetch knowledge areas and categories from the API
-// Fetch knowledge areas and categories from the API
-useEffect(() => {
-  async function fetchData() {
-    try {
-      const response = await fetch("/api/knowledgeAreas");
-      const result = await response.json();
+  // Fetch knowledge areas and categories from the API
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch("/api/knowledgeAreas");
+        const result = await response.json();
 
-      if (result.success && Array.isArray(result.data)) {
-        setKnowledgeAreas(result.data); // Use the data array directly
-      } else {
-        console.error("Unexpected data format:", result);
+        if (result.success && Array.isArray(result.data)) {
+          setKnowledgeAreas(result.data); // Use the data array directly
+        } else {
+          console.error("Unexpected data format:", result);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
     }
-  }
 
-  fetchData();
-}, []);
-
+    fetchData();
+  }, []);
 
   // Update categories when the knowledge area changes
   useEffect(() => {
@@ -73,14 +74,15 @@ useEffect(() => {
       const data = await response.json();
 
       if (data.success) {
-        setMessage("Question saved successfully!");
+        setMessage("Question saved successfully !");
         // Clear form
         setQuestion("");
         setOptions(["", "", "", ""]);
         setCorrectOption("");
         setKnowledgeArea("");
         setCategory("");
-        setDifficulty("Medium");
+        setDifficulty("");
+        // Router.push("/admin/Questions/AllQuestions");
       } else {
         setMessage("Failed to save the question.");
       }
