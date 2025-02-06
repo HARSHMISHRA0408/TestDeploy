@@ -74,25 +74,6 @@
 //   );
 // };
 
-// // Protect the page with server-side authentication
-// export async function getServerSideProps(context) {
-//   const session = await getSession(context);
-
-//   if (!session || session.user.role !== "employee") {
-//     return {
-//       redirect: {
-//         destination: "/testAuth", // Replace with your sign-in page route
-//         permanent: false,
-//       },
-//     };
-//   }
-
-//   return {
-//     props: {
-//       user: session.user, // Pass user data to the component
-//     },
-//   };
-// }
 
 
 // export default CandidateLayout;
@@ -163,5 +144,26 @@ const CandidateLayout = ({ children, user }) => {
     </div>
   );
 };
+
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "employee") {
+    return {
+      redirect: {
+        destination: "/testAuth", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
 
 export default CandidateLayout;
