@@ -1,5 +1,5 @@
 import React from "react";
-import { getSession, signOut } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import CandidateLayout from "./CandidateLayout";
 
 const CandidateDashboard = ({ user }) => {
@@ -17,37 +17,37 @@ const CandidateDashboard = ({ user }) => {
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Name
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.name}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.name}</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Email
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.email}</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Role Title
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.role}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.role}</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Knowledge Area
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.knowledgeArea}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.knowledgeArea}</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Category
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.category}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.category}</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-gray-800 font-medium capitalize">
                   Registration Date
                 </td>
-                <td className="px-6 py-4 text-gray-600">{user.registrationDate}</td>
+                <td className="px-6 py-4 text-gray-600">{user?.registrationDate}</td>
               </tr>
             </tbody>
           </table>
