@@ -93,6 +93,8 @@
 // export default NextAuth(authOptions);
 
 // Updated NextAuth Configuration
+
+
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "../../../utils/db";
@@ -105,6 +107,7 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET, // Add the secret here
   callbacks: {
     async signIn({ user }) {
       try {
