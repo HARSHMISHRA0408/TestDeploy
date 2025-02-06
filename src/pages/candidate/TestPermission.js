@@ -1,18 +1,15 @@
 import { useState } from "react";
+import React from 'react';
+import { getSession } from 'next-auth/react';
 import Layout from "../candidate/CandidateLayout";
 
-const RequestPermission = () => {
+const RequestPermission = ({user}) => {
   const [isRequesting, setIsRequesting] = useState(false);
   const [message, setMessage] = useState("");
+  const email = user.email;
 
   const handleRequestPermission = async () => {
-    const email = localStorage.getItem("userEmail");
-    const token = localStorage.getItem("token");
-
-    if (!email || !token) {
-      setMessage("Error: User not logged in.");
-      return;
-    }
+    
 
     setIsRequesting(true);
     setMessage("");
@@ -22,7 +19,7 @@ const RequestPermission = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          
         },
         body: JSON.stringify({ email, test: "pending" }),
       });
@@ -43,7 +40,8 @@ const RequestPermission = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <Layout user={user}>  
+    <div className="flex flex-col items-center justify-center h-full">
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Request Test Permission</h1>
       <p className="text-lg text-gray-600 mb-6 text-center">
         Your test access is currently restricted. Please request admin approval to proceed.
@@ -67,12 +65,33 @@ const RequestPermission = () => {
         </p>
       )}
     </div>
+    </Layout>
   );
 };
 
 export default RequestPermission;
 
-// Apply the layout to the Quiz page
-RequestPermission .getLayout = function getLayout(page) {
-    return <Layout>{page}</Layout>;
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "employee") {
+    return {
+      redirect: {
+        destination: '/testAuth', // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
   };
+}
+
+// // Apply the layout to the Quiz page
+// RequestPermission .getLayout = function getLayout(page) {
+//     return <Layout>{page}</Layout>;
+//   };

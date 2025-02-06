@@ -1,123 +1,81 @@
-// Import dependencies
-import jwt from "jsonwebtoken";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import Layout from "./CandidateLayout";
+import React from "react";
+import { getSession, signOut } from "next-auth/react";
+import CandidateLayout from "./CandidateLayout";
 
-// Server-side authentication for access restriction
-export async function getServerSideProps({ req }) {
-  const token = req.cookies.token; // Retrieve token from cookies
-
-  if (!token) {
-    // Redirect if no token exists
-    return {
-      redirect: {
-        destination: "/auth/Login",
-        permanent: false,
-      },
-    };
-  }
-
-  try {
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.role !== "employee") {
-      // Redirect if the role is not "employee"
-      return {
-        redirect: {
-          destination: "/auth/Login",
-          permanent: false,
-        },
-      };
-    }
-
-    // Allow access if role is valid
-    return {
-      props: {}, // Pass props if needed
-    };
-  } catch (error) {
-    // Redirect if token verification fails
-    return {
-      redirect: {
-        destination: "/auth/Login",
-        permanent: false,
-      },
-    };
-  }
-}
-
-const Dashboard = () => {
-  const [tokenData, setTokenData] = useState(null); // State to hold decoded token data
-  const router = useRouter(); // Next.js router for navigation
-
-  useEffect(() => {
-    const token = localStorage.getItem("token"); // Retrieve token from localStorage
-
-    if (!token) {
-      alert("No token found. Redirecting to login.");
-      router.push("/auth/Login"); // Redirect if no token exists
-      return;
-    }
-
-    try {
-      // Decode the token's payload
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      setTokenData(decodedToken);
-
-      if (decodedToken.role !== "employee") {
-        alert("No access to this page.");
-        router.push("/auth/Login"); // Redirect if role is invalid
-      }
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-      alert("Invalid token. Redirecting to login.");
-      router.push("/auth/Login"); // Redirect if decoding fails
-    }
-  }, [router]);
-
+const CandidateDashboard = ({ user }) => {
   return (
-    <div className="p-8 bg-gray-100 max-h-screen">
-      <main>
-        {tokenData ? (
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-semibold text-blue-800 mb-6">
-              Profile Information
-            </h2>
-            <table className="min-w-full bg-gray-50 rounded-lg overflow-hidden">
-              <tbody>
-                {Object.entries(tokenData).map(([key, value], index) => (
-                  <tr
-                    key={key}
-                    className={`${
-                      index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                    } hover:bg-gray-200`}
-                  >
-                    <td className="px-6 py-4 text-gray-800 font-medium capitalize">
-                      {key}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {typeof value === "string" ? value : JSON.stringify(value)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">No Data Found</h2>
-            <p>Please log in to view your profile information.</p>
-          </div>
-        )}
-      </main>
-    </div>
+    <CandidateLayout user={user}>
+      <div className="p-6 max-w-4xl mx-auto">
+
+        <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-semibold text-blue-800 mb-6">
+            Profile Information
+          </h2>
+          <table className="min-w-full bg-gray-50 rounded-lg overflow-hidden">
+            <tbody>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Name
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.name}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Email
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.email}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Role Title
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.role}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Knowledge Area
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.knowledgeArea}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Category
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.category}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 text-gray-800 font-medium capitalize">
+                  Registration Date
+                </td>
+                <td className="px-6 py-4 text-gray-600">{user.registrationDate}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </CandidateLayout>
   );
 };
 
-// Apply layout to the Dashboard page
-Dashboard.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+// Fetch session data
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
 
-export default Dashboard;
+  if (!session || session.user.role !== "employee") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // ✅ Ensure user is passed correctly
+    },
+  };
+}
+
+export default CandidateDashboard;

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../Layout";
+import { getSession } from "next-auth/react";
 
 // import { Router } from "next/router";
 
@@ -93,7 +94,7 @@ export default function AddQuestion() {
   };
 
   return (
-    <div className="flex justify-center items-center h-full min-h-screen bg-gray-100 p-4">
+    <div className="flex justify-center items-center  h-auto p-1">
       <div className="w-full max-w-3xl h-full bg-white p-8 rounded-lg shadow-lg overflow-auto">
         <form
           onSubmit={handleSubmit}
@@ -143,61 +144,64 @@ export default function AddQuestion() {
               />
             </div>
 
-            <div>
-              <label className="block text-gray-700 font-bold mb-2">
-                Knowledge Area:
-              </label>
-              <select
-                value={knowledgeArea}
-                onChange={(e) => setKnowledgeArea(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value="" disabled>
-                  Select Knowledge Area
-                </option>
-                {knowledgeAreas.map((area) => (
-                  <option key={area._id} value={area.name}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div>
-              <label className="block text-gray-700 font-bold mb-2">
-                Category:
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value="" disabled>
-                  Select Category
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat._id || cat.name} value={cat.name}>
-                    {cat.name}
+            <div className="flex justify-between">
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">
+                  Knowledge Area:
+                </label>
+                <select
+                  value={knowledgeArea}
+                  onChange={(e) => setKnowledgeArea(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="" disabled>
+                    Select Knowledge Area
                   </option>
-                ))}
-              </select>
-            </div>
+                  {knowledgeAreas.map((area) => (
+                    <option key={area._id} value={area.name}>
+                      {area.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-gray-700 font-bold mb-2">
-                Difficulty:
-              </label>
-              <select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value="Easy">easy</option>
-                <option value="Medium">medium</option>
-                <option value="Hard">hard</option>
-              </select>
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">
+                  Category:
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="" disabled>
+                    Select Category
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat._id || cat.name} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">
+                  Difficulty:
+                </label>
+                <select
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="Easy">easy</option>
+                  <option value="Medium">medium</option>
+                  <option value="Hard">hard</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -217,6 +221,26 @@ export default function AddQuestion() {
       </div>
     </div>
   );
+}
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || (session.user.role !== "admin" && session.user.role !== "manager")) {
+    return {
+      redirect: {
+        destination: "/testAuth", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
 }
 
 AddQuestion.getLayout = function getLayout(page) {

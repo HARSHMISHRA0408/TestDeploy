@@ -2,72 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 import Router from "next/router";
 import React from "react";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import { getSession, signOut } from "next-auth/react";
 
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
-
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "admin") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-const Layout = ({ children }) => {
-  const handleLogout = () => {
-    // Clear the JWT token from local storage
-    localStorage.removeItem("token");
-    localStorage.removeItem("userEmail");
-
-    // Redirect to the login page or home page
-    Router.push("/auth/Login");
-  };
-
+const Layout = ({ children , user }) => {
+ 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="fixed w-64 h-full bg-blue-800 text-white flex flex-col p-5 shadow-lg">
         <div className="flex flex-col items-center mb-8">
           <Image
-            src="/Images/admin.webp"
+            src= {user?.image || "/Images/admin.webp"}
             alt="Admin Profile"
             width={120}
             height={120}
             className="rounded-full border-4 border-gray-300 shadow-lg"
+            onClick={() => Router.push("/admin/Dashboard")}
           />
           <h1 className="text-lg font-bold mt-4">Admin Panel</h1>
         </div>
@@ -95,6 +46,14 @@ const Layout = ({ children }) => {
                 className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
                 <span>Users</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/manager"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+              >
+                <span>Managers</span>
               </Link>
             </li>
             <li>
@@ -131,7 +90,7 @@ const Layout = ({ children }) => {
             </li>
             <li>
               <button
-                onClick={handleLogout}
+                onClick={() => signOut()}
                 className="flex items-center space-x-2 bg-red-500 py-2 px-4 rounded-md hover:bg-red-600 transition duration-200 w-full text-left"
               >
                 <span>Logout</span>
@@ -154,5 +113,26 @@ const Layout = ({ children }) => {
     </div>
   );
 };
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "admin") {
+    return {
+      redirect: {
+        destination: "/testAuth", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+
 
 export default Layout;

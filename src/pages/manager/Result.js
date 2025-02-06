@@ -1,59 +1,18 @@
 import { useEffect, useState } from 'react';
 import Layout from './Layout';
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import React from 'react';
+import { getSession } from 'next-auth/react';
 
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "manager") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-
-export default function ResultsPage() {
+export default function ResultsPage({ user }) {
   const [results, setResults] = useState([]);
   const [filteredResults, setFilteredResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch all results initially
+  // Fetch all results initiallys
   useEffect(() => {
     const fetchResults = async () => {
       try {
@@ -84,15 +43,16 @@ export default function ResultsPage() {
   }, [searchTerm, results]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-4xl font-semibold text-center text-gray-900 mb-6">Quiz Results</h1>
+    <Layout user={user}>
+    <div className="container mx-auto px-4 py-4 max-w-7xl">
+      <h1 className=" font-semibold text-center text-gray-900 mb-6">Results</h1>
 
       {/* Search Input */}
       <div className="mb-8 flex justify-center">
         <input
           type="text"
           placeholder="Search by email"
-          className="border border-gray-300 p-4 w-full md:w-1/2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="border border-gray-300 p-1 w-full md:w-1/2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -109,30 +69,30 @@ export default function ResultsPage() {
 
       {/* Results Section */}
       {!loading && !error && (
-        <div className="overflow-x-auto shadow-lg rounded-lg bg-white">
+        <div className="overflow-x-auto shadow-lg rounded-lg bg-white ">
           {filteredResults.length > 0 ? (
             filteredResults.map((result) => (
               <div key={result._id} className="mb-6">
                 {/* Email Header */}
-                <div className="bg-blue-600 text-white p-4 rounded-t-lg">
+                <div className="bg-blue-600 text-white p-2 ">
                   <h3 className="text-xl font-semibold">Email: {result.email}</h3>
                 </div>
 
                 {/* Attempts Table */}
-                <div className="bg-white rounded-b-lg p-4">
+                <div className="bg-white rounded-b-lg p-1">
                   <table className="min-w-full">
                     <thead className="bg-gray-100 text-gray-600">
                       <tr>
-                        <th className="text-left px-6 py-3 font-semibold text-sm">Score</th>
-                        <th className="text-left px-6 py-3 font-semibold text-sm">Date</th>
+                        <th className="text-left px-6 py-1 font-semibold text-sm">Score</th>
+                        <th className="text-left px-6 py-1 font-semibold text-sm">Date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {result.attempts.length > 0 ? (
                         result.attempts.map((attempt) => (
                           <tr key={attempt._id} className="border-b hover:bg-gray-50">
-                            <td className="px-6 py-4 text-gray-700">{attempt.score}</td>
-                            <td className="px-6 py-4 text-gray-700">{new Date(attempt.date).toLocaleString()}</td>
+                            <td className="px-6 py-1 text-gray-700">{attempt.score}</td>
+                            <td className="px-6 py-1 text-gray-700">{new Date(attempt.date).toLocaleString()}</td>
                           </tr>
                         ))
                       ) : (
@@ -151,9 +111,32 @@ export default function ResultsPage() {
         </div>
       )}
     </div>
+    </Layout>
   );
 }
 
-ResultsPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "manager") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+
+
+// ResultsPage.getLayout = function getLayout(page) {
+//   return <Layout>{page}</Layout>;
+// };

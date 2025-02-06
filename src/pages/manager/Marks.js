@@ -1,51 +1,10 @@
-import { useState, useEffect } from 'react';
+import React ,{ useState, useEffect } from 'react';
 import Layout from "./Layout";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import { getSession } from 'next-auth/react';
 
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "manager") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-function MarksPage() {
+function MarksPage({ user }) {
   const [marks, setMarks] = useState([]);
   const [editingMark, setEditingMark] = useState(null);
   const [form, setForm] = useState({
@@ -102,6 +61,7 @@ function MarksPage() {
   };
 
   return (
+    <Layout user = {user} > 
     <div className="container mx-auto py-10 px-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Manage Marks</h1>
 
@@ -173,11 +133,33 @@ function MarksPage() {
         </form>
       )}
     </div>
+    </Layout>
   );
 }
 
-MarksPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "manager") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+
+
+// MarksPage.getLayout = function getLayout(page) {
+//   return <Layout>{page}</Layout>;
+// };
 
 export default MarksPage;

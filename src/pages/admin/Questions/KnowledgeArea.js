@@ -1,50 +1,11 @@
 import { useState, useEffect } from "react";
 import Layout from "../Layout";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import React from "react";
+import { getSession, signOut } from "next-auth/react";
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
 
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "admin") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-function KnowledgeAreasPage() {
+function KnowledgeAreasPage({ user }) {
   const [knowledgeAreas, setKnowledgeAreas] = useState([]);
   const [form, setForm] = useState({ name: "", categories: [""] });
   const [editing, setEditing] = useState(null);
@@ -137,86 +98,107 @@ function KnowledgeAreasPage() {
   };
 
   return (
-    <div className="container mx-auto py-10 px-6">
-      <h1 className="text-3xl font-semibold mb-6 text-center text-indigo-700">Knowledge Areas</h1>
+    <Layout user={user}>
+      <div className="container mx-auto py-10 px-6">
+        <h1 className="text-3xl font-semibold mb-6 text-center text-indigo-700">Knowledge Areas</h1>
 
-      <form onSubmit={handleSubmit} className="mb-6 bg-white p-6 shadow-lg rounded-lg">
-        <div className="mb-4">
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Enter Knowledge Area Name"
-            required
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-
-        {form.categories.map((category, index) => (
-          <div key={index} className="mb-4">
+        <form onSubmit={handleSubmit} className="mb-6 bg-white p-6 shadow-lg rounded-lg">
+          <div className="mb-4">
             <input
               type="text"
-              name="categories"
-              value={category}
-              onChange={(e) => handleChange(e, index)}
-              placeholder={`Category ${index + 1}`}
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Enter Knowledge Area Name"
               required
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-        ))}
 
-        <button
-          type="button"
-          onClick={addCategoryField}
-          className="inline-block bg-gray-200 text-gray-700 p-3 mr-3 rounded hover:bg-gray-300 transition-all mb-4"
-        >
-          + Add Category
-        </button>
-
-        <button
-          type="submit"
-          className="inline-block bg-indigo-600 text-white p-3 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
-        >
-          {editing ? "Update" : "Add"} Knowledge Area
-        </button>
-      </form>
-
-      {message && <p className="text-green-600 mb-4 text-center">{message}</p>}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {knowledgeAreas.map((area) => (
-          <div key={area._id} className="bg-white p-6 shadow-lg rounded-lg hover:shadow-xl transition-all">
-            <h2 className="text-xl font-semibold text-indigo-600 mb-4">{area.name}</h2>
-            <ul className="ml-4 list-disc text-gray-700 mb-4">
-              {area.categories.map((cat, idx) => (
-                <li key={idx}>{cat.name}</li>
-              ))}
-            </ul>
-            <div className="flex justify-between">
-              <button
-                onClick={() => handleEdit(area)}
-                className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-all"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(area._id)}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all"
-              >
-                Delete
-              </button>
+          {form.categories.map((category, index) => (
+            <div key={index} className="mb-4">
+              <input
+                type="text"
+                name="categories"
+                value={category}
+                onChange={(e) => handleChange(e, index)}
+                placeholder={`Category ${index + 1}`}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
-          </div>
-        ))}
+          ))}
+
+          <button
+            type="button"
+            onClick={addCategoryField}
+            className="inline-block bg-gray-200 text-gray-700 p-3 mr-3 rounded hover:bg-gray-300 transition-all mb-4"
+          >
+            + Add Category
+          </button>
+
+          <button
+            type="submit"
+            className="inline-block bg-indigo-600 text-white p-3 rounded-lg shadow-md hover:bg-indigo-700 transition-all"
+          >
+            {editing ? "Update" : "Add"} Knowledge Area
+          </button>
+        </form>
+
+        {message && <p className="text-green-600 mb-4 text-center">{message}</p>}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {knowledgeAreas.map((area) => (
+            <div key={area._id} className="bg-white p-6 shadow-lg rounded-lg hover:shadow-xl transition-all">
+              <h2 className="text-xl font-semibold text-indigo-600 mb-4">{area.name}</h2>
+              <ul className="ml-4 list-disc text-gray-700 mb-4">
+                {area.categories.map((cat, idx) => (
+                  <li key={idx}>{cat.name}</li>
+                ))}
+              </ul>
+              <div className="flex justify-between">
+                <button
+                  onClick={() => handleEdit(area)}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-all"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(area._id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 
-KnowledgeAreasPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+
+
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "admin") {
+    return {
+      redirect: {
+        destination: "/testAuth", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
 
 export default KnowledgeAreasPage;

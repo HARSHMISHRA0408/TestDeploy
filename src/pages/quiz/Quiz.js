@@ -1,141 +1,155 @@
 import { useState, useEffect, useRef } from "react";
-import Layout from "../candidate/CandidateLayout";
-// import { Router, useRouter } from "next/router";
 import Router, { useRouter } from "next/router";
-import React from "react";
+import React from 'react';
+import { getSession } from 'next-auth/react';
 
-export default function Quiz() {
+export default function Quiz({ user }) {
   const [questions, setQuestions] = useState({ easy: [], medium: [], hard: [] });
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [currentDifficulty, setCurrentDifficulty] = useState("easy");
-  const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [questionsAsked, setQuestionsAsked] = useState(0);
+  // MARKS AND TIME
+  const [easyMarks, setEasyMarks] = useState(null);
+  const [mediumMarks, setMediumMarks] = useState(null);
+  const [hardMarks, setHardMarks] = useState(null);
+  const [easyTime, setEasyTime] = useState(null);
+  const [mediumTime, setMediumTime] = useState(null);
+  const [hardTime, setHardTime] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  //tracking to create result dashboard
+  const [easyCorrect, setEasyCorrect] = useState(0);
+  const [mediumCorrect, setMediumCorrect] = useState(0);
+  const [hardCorrect, setHardCorrect] = useState(0);
+  const [easyIncorrect, setEasyIncorrect] = useState(0);
+  const [mediumIncorrect, setMediumIncorrect] = useState(0);
+  const [hardIncorrect, setHardIncorrect] = useState(0);
+
+  // Track number of questions asked per difficulty level
+  const [questionsAskedl, setQuestionsAskedl] = useState({ easy: 0, medium: 0, hard: 0 });
+
+
+
+
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
   const [feedback, setFeedback] = useState("");
-  const [tokenData, setTokenData] = useState(null);
+  // const [tokenData, setTokenData] = useState(null);
   const askedQuestions = useRef(new Set());
   const consecutiveIncorrect = useRef(0);
   const MIN_QUESTIONS = 10;
   const router = useRouter();
+  const email = user?.email;
+  const knowledgeArea = user?.knowledgeArea;
+  const category = user?.category;
 
 
-  //FETCHING QUESTIONS AND DIVIDING IN DIFFERENT LEVELS
-  // useEffect(() => {
-    
-  //   const fetchQuestions = async () => {
-  //     try {
-  //       const response = await fetch("/api/questions/getQuestions");
-  //       if (!response.ok) throw new Error("Failed to fetch questions: " + response.statusText);
-
-  //       const data = await response.json();
-  //       if (!data?.data) throw new Error("Invalid response format.");
-  //       const allQuestions = data.data;
-
-  //       const easy = allQuestions.filter((q) => q.difficulty.toLowerCase() === "easy");
-  //       const medium = allQuestions.filter((q) => q.difficulty.toLowerCase() === "medium");
-  //       const hard = allQuestions.filter((q) => q.difficulty.toLowerCase() === "hard");
-
-  //       setQuestions({ easy, medium, hard });
-
-  //       const firstEasy = easy[0];
-  //       setCurrentQuestion(firstEasy);
-  //       askedQuestions.current.add(firstEasy._id || firstEasy.question); // Unique identifier
-  //     } catch (error) {
-  //       console.error("Error fetching questions:", error);
-  //     }
-  //   };
-
-  //   fetchQuestions();
-  // }, []);
-
+  //FETCHING MARKS AND TIME IN DIFFERENT LEVELS
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
+    const fetchMarksAndTime = async () => {
       try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
-        setTokenData({
-          knowledgeArea: decodedToken.knowledgeArea,
-          category: decodedToken.category,
-        });
+        const response = await fetch("/api/marks");
+        if (!response.ok) throw new Error("Failed to fetch marks and time: " + response.statusText);
+
+        const data = await response.json();
+        if (!data?.data) throw new Error("Invalid response format.");
+        console.log("Parsed response data:", data);
+
+        // Process the data to set marks and time for each level
+        const levels = data.data;
+
+        const easyLevel = levels.find(level => level.level === "easy");
+        const mediumLevel = levels.find(level => level.level === "medium");
+        const hardLevel = levels.find(level => level.level === "hard");
+
+        if (easyLevel) {
+          setEasyMarks(easyLevel.marks);
+          setEasyTime(easyLevel.time * 60);
+          setTimeLeft(easyLevel.time * 60);
+        }
+        if (mediumLevel) {
+          setMediumMarks(mediumLevel.marks);
+          setMediumTime(mediumLevel.time * 60);
+        }
+        if (hardLevel) {
+          setHardMarks(hardLevel.marks);
+          setHardTime(hardLevel.time * 60);
+        }
       } catch (error) {
-        console.error("Failed to decode token:", error);
+        console.error("Error fetching marks and time:", error);
       }
-    } else {
-      console.warn("No token found in localStorage.");
-    }
+    };
+
+    fetchMarksAndTime();
   }, []);
 
-// Fetch and filter questions
-useEffect(() => {
-  const fetchQuestions = async () => {
-    try {
-      console.log("Fetching questions from the API...");
 
-      const response = await fetch("/api/questions/getQuestions");
-      if (!response.ok) throw new Error("Failed to fetch questions: " + response.statusText);
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        console.log("Fetching questions from the API...");
 
-      console.log("API response received successfully.");
+        const response = await fetch("/api/questions/getQuestions");
+        if (!response.ok) throw new Error("Failed to fetch questions: " + response.statusText);
 
-      const data = await response.json();
-      console.log("Parsed response data:", data);
+        console.log("API response received successfully.");
 
-      if (!data?.data) throw new Error("Invalid response format.");
+        const data = await response.json();
+        console.log("Parsed response data:", data);
 
-      const allQuestions = data.data;
-      console.log("Total questions fetched:", allQuestions.length);
+        if (!data?.data) throw new Error("Invalid response format.");
 
-      // Apply filters based on knowledgeArea and category
-      const { knowledgeArea, category } = tokenData || {};
-      console.log("Applying filters with knowledgeArea:", knowledgeArea, "and category:", category);
+        const allQuestions = data.data;
+        console.log("Total questions fetched:", allQuestions.length);
 
-      const filteredQuestions = allQuestions.filter(
-        (q) =>
-          (!knowledgeArea || q.knowledge_area === knowledgeArea) &&
-          (!category || q.category === category)
-      );
-      console.log("Filtered questions count:", filteredQuestions.length);
+        // Apply filters based on knowledgeArea and category
+        // const { knowledgeArea, category } = tokenData || {};
+        console.log("Applying filters with knowledgeArea:", knowledgeArea, "and category:", category);
 
-      // Divide questions by difficulty
-      const easy = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "easy");
-      const medium = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "medium");
-      const hard = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "hard");
+        const filteredQuestions = allQuestions.filter(
+          (q) =>
+            (!knowledgeArea || q.knowledge_area === knowledgeArea) &&
+            (!category || q.category === category)
+        );
+        console.log("Filtered questions count:", filteredQuestions.length);
 
-      console.log("Easy questions count:", easy.length);
-      console.log("Medium questions count:", medium.length);
-      console.log("Hard questions count:", hard.length);
+        // Divide questions by difficulty
+        const easy = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "easy");
+        const medium = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "medium");
+        const hard = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "hard");
 
-      setQuestions({ easy, medium, hard });
+        console.log("Easy questions count:", easy.length);
+        console.log("Medium questions count:", medium.length);
+        console.log("Hard questions count:", hard.length);
 
-      // Set the first question
-      const firstEasy = easy[0];
-      if (firstEasy) {
-        console.log("Setting the first easy question as current question:", firstEasy);
-        setCurrentQuestion(firstEasy);
-        askedQuestions.current.add(firstEasy._id || firstEasy.question); // Unique identifier
-      } else {
-        console.log("No easy questions found to set as the current question.");
+        setQuestions({ easy, medium, hard });
+
+        // Set the first question
+        const firstEasy = easy[0];
+        if (firstEasy) {
+          console.log("Setting the first easy question as current question:", firstEasy);
+          setCurrentQuestion(firstEasy);
+          askedQuestions.current.add(firstEasy._id || firstEasy.question); // Unique identifier
+        } else {
+          console.log("No easy questions found to set as the current question.");
+        }
+      } catch (error) {
+        console.error("Error fetching questions:", error);
       }
-    } catch (error) {
-      console.error("Error fetching questions:", error);
+    };
+
+    // Fetch questions only if token data is available
+    if (knowledgeArea && category) {
+      console.log("Token data available. Proceeding to fetch questions.");
+      fetchQuestions();
+    } else {
+      console.log("Token data not available. Skipping question fetch.");
     }
-  };
-
-  // Fetch questions only if token data is available
-  if (tokenData) {
-    console.log("Token data available. Proceeding to fetch questions.");
-    fetchQuestions();
-  } else {
-    console.log("Token data not available. Skipping question fetch.");
-  }
-}, [tokenData]);
+  }, [knowledgeArea, category]);
 
 
-
-
-  //HANDLEING IF TIOM BECOMES 0.
+  //HANDLEING IF TIME BECOMES 0.
   useEffect(() => {
     if (timeLeft === 0) {
       handleNextQuestion(false);
@@ -147,17 +161,67 @@ useEffect(() => {
     }
   }, [currentQuestion, timeLeft]);
 
+
   const handleAnswer = (optionText) => {
     const isCorrect = optionText === currentQuestion.correct_option;
+
+    if (currentDifficulty === "easy") {
+      setQuestionsAskedl((prev) => ({
+        ...prev, // Keep previous values
+        easy: prev.easy + 1,
+      }));
+
+    } else if (currentDifficulty === "medium") {
+      setQuestionsAskedl((prev) => ({
+        ...prev, // Keep previous values
+        medium: prev.medium + 1,
+      }));
+
+    } else if (currentDifficulty === "hard") {
+      setQuestionsAskedl((prev) => ({
+        ...prev, // Keep previous values
+        hard: prev.hard + 1,
+      }));
+
+    }
+
+
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      // Increment score based on difficulty level
+      const marks = currentDifficulty === "easy" ? easyMarks
+        : currentDifficulty === "medium" ? mediumMarks
+          : hardMarks; // 3 for hard
+      setScore((prev) => prev + marks);
       consecutiveIncorrect.current = 0; // Reset counter on correct answer
+
+      // Update correct answers count based on difficulty
+      if (currentDifficulty === "easy") {
+        setEasyCorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "medium") {
+        setMediumCorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "hard") {
+        setHardCorrect((prev) => prev + 1);
+      }
+
+
     } else {
+
+      // Increment incorrect answers count based on difficulty
+      if (currentDifficulty === "easy") {
+        setEasyIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "medium") {
+        setMediumIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "hard") {
+        setHardIncorrect((prev) => prev + 1);
+      }
+
       consecutiveIncorrect.current += 1;
     }
 
     handleNextQuestion(isCorrect);
   };
+
+
 
   const getNextQuestion = (difficulty) => {
     const difficultyArray = questions[difficulty];
@@ -199,7 +263,8 @@ useEffect(() => {
     if (nextQuestion) {
       setCurrentQuestion(nextQuestion);
       setCurrentDifficulty(nextDifficulty);
-      setTimeLeft(nextDifficulty === "easy" ? 60 : nextDifficulty === "medium" ? 120 : 180);
+      //Edit Time Here
+      setTimeLeft(nextDifficulty === "easy" ? easyTime : nextDifficulty === "medium" ? mediumTime : hardTime); //Time for each question
       askedQuestions.current.add(nextQuestion._id || nextQuestion.question);
     } else {
       setIsQuizComplete(true);
@@ -209,7 +274,6 @@ useEffect(() => {
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
 
-    const email = localStorage.getItem("userEmail");
     if (!email) {
       alert("Error: User not logged in.");
       return;
@@ -234,62 +298,38 @@ useEffect(() => {
       alert("Error submitting feedback: " + error.message);
     }
 
-     // Clear the JWT token from local storage
-     localStorage.removeItem("token");
-     localStorage.removeItem("email");
- 
-     // Optionally, clear any other user-related data
- 
-     // Redirect to the login page or home page
-     Router.push("/auth/Login"); // Adjust the path as necessary
   };
 
-  // const submitResults = () => {
-  //   const email = localStorage.getItem("userEmail");
-  //   if (!email) {
-  //     alert("Error: User not logged in.");
-  //     return;
-  //   }
-
-  //   fetch("/api/results/saveresult", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ email, score }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       if (data.success) alert("Result saved successfully!");
-  //     })
-  //     .catch((error) => alert("Error saving result.", error));
-
-  //     setIsQuizComplete(true);
-  //     return;
-  // };
-
   const submitResults = async () => {
-    const email = localStorage.getItem("userEmail");
-    if (!email) {
+    // const email = localStorage.getItem("userEmail");
+    if (!user.email) {
       alert("Error: User not logged in.");
       return;
     }
-  
+
     // Save the quiz result
     await fetch("/api/results/saveresult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, score }),
+      body: JSON.stringify({
+        email, score, easyCorrect, easyIncorrect, mediumCorrect, mediumIncorrect, hardCorrect, hardIncorrect, questionsAskedl: {
+          easy: questionsAskedl.easy, // Assuming this is how you're tracking easy questions
+          medium: questionsAskedl.medium, // Similarly for medium
+          hard: questionsAskedl.hard // Similarly for hard
+        }
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
           alert("Result saved successfully!");
-  
+
           // Update the user's 'test' status to 'notallowed'
           fetch("/api/testupdate", {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
+              // Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
             },
             body: JSON.stringify({ email, test: "notallowed" }),
           })
@@ -315,7 +355,7 @@ useEffect(() => {
 
 
   };
-  
+
 
   return (
     <div className="quiz-container mx-auto mt-10 max-w-3xl bg-white shadow-lg rounded-lg p-6">
@@ -337,11 +377,11 @@ useEffect(() => {
                 Questions Asked: <span className="font-bold">{questionsAsked}</span>
               </p>
             </div>
-  
+
             <div className="mb-6">
               <p className="text-xl font-semibold text-gray-900">{currentQuestion.question}</p>
             </div>
-  
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {currentQuestion.options.map((option, index) => (
                 <button
@@ -353,7 +393,7 @@ useEffect(() => {
                 </button>
               ))}
             </div>
-  
+
             <div className="flex justify-between items-center mt-4">
               <button
                 onClick={() => handleNextQuestion(false)}
@@ -378,7 +418,7 @@ useEffect(() => {
           <p className="text-lg font-medium text-gray-700 mb-4">
             Your Score: <span className="font-bold">{score}</span>
           </p>
-  
+
           {!isFeedbackSubmitted ? (
             <form onSubmit={handleFeedbackSubmit} className="mt-4">
               <textarea
@@ -403,9 +443,25 @@ useEffect(() => {
       )}
     </div>
   );
-} 
+}
 
-// Apply the layout to the Quiz page
-Quiz.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "employee") {
+    return {
+      redirect: {
+        destination: '/', // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+

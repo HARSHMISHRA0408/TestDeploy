@@ -299,15 +299,15 @@ export default function EditQuestion() {
     });
   };
 
-  const handleAddOption = () => {
-    if (newOption.trim()) {
-      setQuestionData({
-        ...questionData,
-        options: [...(questionData.options || []), { text: newOption.trim() }],
-      });
-      setNewOption("");
-    }
-  };
+  // const handleAddOption = () => {
+  //   if (newOption.trim()) {
+  //     setQuestionData({
+  //       ...questionData,
+  //       options: [...(questionData.options || []), { text: newOption.trim() }],
+  //     });
+  //     setNewOption("");
+  //   }
+  // };
 
   const handleEditOption = (index, newValue) => {
     const updatedOptions = [...questionData.options];
@@ -315,10 +315,10 @@ export default function EditQuestion() {
     setQuestionData({ ...questionData, options: updatedOptions });
   };
 
-  const handleRemoveOption = (index) => {
-    const updatedOptions = questionData.options.filter((_, i) => i !== index);
-    setQuestionData({ ...questionData, options: updatedOptions });
-  };
+  // const handleRemoveOption = (index) => {
+  //   const updatedOptions = questionData.options.filter((_, i) => i !== index);
+  //   setQuestionData({ ...questionData, options: updatedOptions });
+  // };
 
   const handleSelectCorrectAnswer = (optionText) => {
     setQuestionData({ ...questionData, correct_option: optionText });
@@ -343,8 +343,8 @@ export default function EditQuestion() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-2xl font-semibold text-center mb-8">Edit Question</h1>
+    <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      {/* <h1 className="text-2xl font-semibold text-center mb-8">Edit Question</h1> */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Question */}
         <div className="space-y-2">
@@ -360,6 +360,8 @@ export default function EditQuestion() {
           />
         </div>
 
+
+       <div className="flex justify-between">
         {/* Knowledge Area */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">Knowledge Area</label>
@@ -423,18 +425,19 @@ export default function EditQuestion() {
             ))}
           </select>
         </div>
+        </div>
 
         {/* Options */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">Options</label>
           <ul className="space-y-2">
             {questionData.options?.map((option, index) => (
-              <li key={index} className="flex items-center space-x-2">
+              <li key={index} className="flex items-center justify-between space-x-2">
                 <input
                   type="text"
                   value={option.text}
                   onChange={(e) => handleEditOption(index, e.target.value)}
-                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200"
+                  className="w-1/2 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200"
                 />
                 <button
                   type="button"
@@ -443,18 +446,18 @@ export default function EditQuestion() {
                 >
                   {questionData.correct_option === option.text ? 'Correct' : 'Set Correct'}
                 </button>
-                <button
+                {/* <button
                   type="button"
                   onClick={() => handleRemoveOption(index)}
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
                 >
                   Remove
-                </button>
+                </button> */}
               </li>
             ))}
           </ul>
 
-          {/* Add Option */}
+          {/* Add Option
           <div className="flex items-center space-x-2">
             <input
               type="text"
@@ -470,7 +473,7 @@ export default function EditQuestion() {
             >
               Add Option
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Submit Button */}

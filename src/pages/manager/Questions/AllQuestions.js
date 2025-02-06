@@ -2,71 +2,68 @@ import { useRouter } from "next/router";
 import Layout from "../Layout"; // Adjust the path if needed
 import { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import React from "react";
+import { getSession } from "next-auth/react";
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "manager") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-function AllQuestions({ initialQuestions = [] }) {
+function AllQuestions({ user }) {
   const router = useRouter();
-  const [questions, setQuestions] = useState(initialQuestions);
+  const [questions, setQuestions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
+  // const knowledgeArea = user.knowledgeArea;
+  
+
+  // const fetchQuestions = async () => {
+  //   setLoading(true);
+  //   try {
+      
+
+  //     const res = await fetch("/api/questions/getQuestions");
+  //     const dataun = await res.json();
+  //     console.log("API Response:", dataun);
+
+  //     if (Array.isArray(dataun.data)) {
+  //       const filteredQuestions = dataun.data.filter(
+  //         (question) => question.knowledge_area === knowledgeArea
+  //       );
+  //       setQuestions(filteredQuestions);
+  //       console.log("Filtered Questions:", filteredQuestions);
+  //     } else {
+  //       console.error("Unexpected response format: data is not an array");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching questions:", error);
+  //   }
+  //   setLoading(false);
+  // };
 
   const fetchQuestions = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
+      const userKnowledgeAreas = user.manageKnowledgeArea || []; // Get current user's manageKnowledgeArea
+
       const res = await fetch("/api/questions/getQuestions");
-      const data = await res.json();
-      if (data.success) {
-        setQuestions(data.data);
+      const dataun = await res.json();
+      console.log("API Response:", dataun);
+
+      if (Array.isArray(dataun.data)) {
+        // Filter questions where the knowledge_area matches any of the user's manageKnowledgeArea areas
+        const filteredQuestions = dataun.data.filter((question) =>
+          userKnowledgeAreas.some((area) => question.knowledge_area === area) // Check if any area matches
+        );
+        setQuestions(filteredQuestions);
+        console.log("Filtered Questions:", filteredQuestions);
       } else {
-        console.error("Failed to fetch questions");
+        console.error("Unexpected response format: data is not an array");
       }
     } catch (error) {
       console.error("Error fetching questions:", error);
     }
-    setLoading(false); // Start loading
+    setLoading(false);
   };
+
+
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -77,15 +74,13 @@ function AllQuestions({ initialQuestions = [] }) {
   );
 
   useEffect(() => {
-    if (!initialQuestions.length) {
-      fetchQuestions();
-    }
-  }, [initialQuestions]);
+    fetchQuestions();
+  }, []);
 
   return (
+    <Layout user={user}>
     <div style={{ padding: "20px" }}>
       <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>All Questions</h1>
-      
 
       <div
         style={{
@@ -110,7 +105,7 @@ function AllQuestions({ initialQuestions = [] }) {
           }}
         />
         <button
-          onClick={() => router.push("/admin/Questions/addQuestion")}
+          onClick={() => router.push("/manager/Questions/addQuestion")}
           style={{
             padding: "10px 20px",
             backgroundColor: "#4CAF50",
@@ -127,12 +122,12 @@ function AllQuestions({ initialQuestions = [] }) {
       </div>
 
       <div>
-      {/* {loading && (
+        {loading && (
           <div className="flex justify-center items-center h-64">
             <ClipLoader size={50} color="#3498db" loading={loading} />
           </div>
-        )} */}
-        
+        )}
+
         {filteredQuestions.length > 0 ? (
           filteredQuestions.map((question) => (
             <div
@@ -146,7 +141,7 @@ function AllQuestions({ initialQuestions = [] }) {
                 backgroundColor: "#fff",
                 transition: "all 0.3s ease",
                 display: "flex",
-                justifyContent: "space-between", // Aligning the elements
+                justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
@@ -161,8 +156,6 @@ function AllQuestions({ initialQuestions = [] }) {
                   <strong>Difficulty:</strong> {question.difficulty}
                 </p>
               </div>
-
-        
 
               <button
                 onClick={() => router.push(`/questions/edit/${question._id}`)}
@@ -190,12 +183,35 @@ function AllQuestions({ initialQuestions = [] }) {
         )}
       </div>
     </div>
+    </Layout>
   );
 }
 
-// Apply layout to the AllQuestions page
-AllQuestions.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "manager") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+
+
+// // Apply layout to the AllQuestions page
+// AllQuestions.getLayout = function getLayout(page) {
+//   return <Layout>{page}</Layout>;
+// };
 
 export default AllQuestions;

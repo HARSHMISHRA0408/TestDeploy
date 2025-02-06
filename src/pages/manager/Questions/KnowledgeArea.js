@@ -137,6 +137,7 @@ function KnowledgeAreasPage() {
   };
 
   return (
+    <Layout user={user}>
     <div className="container mx-auto py-10 px-6">
       <h1 className="text-3xl font-semibold mb-6 text-center text-indigo-700">Knowledge Areas</h1>
 
@@ -212,7 +213,30 @@ function KnowledgeAreasPage() {
         ))}
       </div>
     </div>
+    </Layout>
   );
+}
+
+
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "manager") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
 }
 
 KnowledgeAreasPage.getLayout = function getLayout(page) {

@@ -2,9 +2,6 @@
 // //To check test is allowed or not (allow , notallowed , pending or rejected)
 
 
-
-import { verifyToken } from "../../utils/authMiddleware";
-
 export default async function handler(req, res) {
   if (req.method === "GET") {
     // Use verifyToken to authenticate the user and decode the token

@@ -1,52 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "./Layout";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import { getSession } from "next-auth/react";
 
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "manager") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-const PendingUsers = () => {
+const PendingUsers = ({user}) => {
   const [users, setUsers] = useState([]);
 
   // Fetch users with test status 'pending'
@@ -87,6 +46,7 @@ const PendingUsers = () => {
   };
 
   return (
+    <Layout user={user}>
     <div className="p-8 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
         Pending Test Requests
@@ -127,11 +87,34 @@ const PendingUsers = () => {
         </div>
       )}
     </div>
+    </Layout>
   );
 };
 
-PendingUsers.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "manager") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
+}
+
+
+// PendingUsers.getLayout = function getLayout(page) {
+//   return <Layout>{page}</Layout>;
+// };
 
 export default PendingUsers;
