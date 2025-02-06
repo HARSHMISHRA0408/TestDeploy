@@ -1,50 +1,10 @@
 import { useState, useEffect } from "react";
 import Layout from "../Layout";
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
+import { getSession } from "next-auth/react";
+import React from "react";
 
-// Server-side authentication to restrict access to admin users
-export async function getServerSideProps({ req }) {
-  const redirectToLogin = {
-    redirect: {
-      destination: "/auth/Login",
-      permanent: false,
-    },
-  };
 
-  try {
-    // Parse cookies manually to ensure proper extraction
-    const cookies = parse(req.headers.cookie || "");
-    const token = cookies.token;
-
-    // Redirect if token is missing
-    if (!token || token.trim() === "") {
-      console.error("No token found in cookies");
-      return redirectToLogin;
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Check if the role is "manager"
-    if (decoded.role !== "manager") {
-      console.error(`Unauthorized role: ${decoded.role}`);
-      return redirectToLogin;
-    }
-
-    // Token is valid, and role is "manager"
-    return {
-      props: {
-        user: decoded, // Pass decoded user info if needed
-      },
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return redirectToLogin;
-  }
-}
-
-function KnowledgeAreasPage() {
+function KnowledgeAreasPage({user}) {
   const [knowledgeAreas, setKnowledgeAreas] = useState([]);
   const [form, setForm] = useState({ name: "", categories: [""] });
   const [editing, setEditing] = useState(null);
@@ -239,8 +199,6 @@ export async function getServerSideProps(context) {
   };
 }
 
-KnowledgeAreasPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+
 
 export default KnowledgeAreasPage;

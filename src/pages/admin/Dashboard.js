@@ -34,7 +34,7 @@ const Dashboard = ({ user }) => {
               onClick={() => window.location.href = "/admin/Result"}
               className="p-6 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             >
-              <h2 className="text-2xl font-semibold mb-2">Result's</h2>
+              <h2 className="text-2xl font-semibold mb-2">Result&#39;s</h2>
               <p>Test result.</p>
             </button>
 
@@ -42,7 +42,7 @@ const Dashboard = ({ user }) => {
               onClick={() => window.location.href = "/admin/Requests"}
               className="p-6 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             >
-              <h2 className="text-2xl font-semibold mb-2">Test Request's</h2>
+              <h2 className="text-2xl font-semibold mb-2">Test Request&#39;s</h2>
               <p>Manage user test requests.</p>
             </button>
 
