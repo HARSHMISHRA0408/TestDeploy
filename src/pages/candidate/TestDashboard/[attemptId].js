@@ -137,12 +137,20 @@ const AttemptDashboard = () => {
 
         {/* Questions Asked Section */}
         <div className="grid grid-cols-3 gap-4 mt-6">
-          {["easy", "medium", "hard"].map((level) => (
-            <div key={level} className="bg-gray-50 p-4 rounded-lg text-center shadow-sm">
-              <p className="text-lg font-medium text-gray-700 capitalize">{level}</p>
-              <p className="text-2xl font-bold text-gray-900">{attempt.questionsAsked[level]}</p>
+          
+            <div  className="bg-gray-50 p-4 rounded-lg text-center shadow-sm">
+              <p className="text-lg font-medium text-gray-700 capitalize">Easy</p>
+              <p className="text-2xl font-bold text-gray-900">{attempt.easyCorrect+attempt.easyIncorrect}</p>
             </div>
-          ))}
+            <div className="bg-gray-50 p-4 rounded-lg text-center shadow-sm">
+              <p className="text-lg font-medium text-gray-700 capitalize">Medium</p>
+              <p className="text-2xl font-bold text-gray-900">{attempt.mediumCorrect + attempt.mediumIncorrect}</p>
+            </div>
+            <div  className="bg-gray-50 p-4 rounded-lg text-center shadow-sm">
+              <p className="text-lg font-medium text-gray-700 capitalize">Hard</p>
+              <p className="text-2xl font-bold text-gray-900">{attempt.hardCorrect + attempt.hardIncorrect}</p>
+            </div>
+        
         </div>
 
         {/* Correct / Incorrect Answer Icons */}

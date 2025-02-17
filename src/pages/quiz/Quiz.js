@@ -3,7 +3,7 @@ import Router, { useRouter } from "next/router";
 import React from 'react';
 import { getSession } from 'next-auth/react';
 
-export default function Quiz({ user }) {
+export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}) {
   const [questions, setQuestions] = useState({ easy: [], medium: [], hard: [] });
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [currentDifficulty, setCurrentDifficulty] = useState("easy");
@@ -41,8 +41,10 @@ export default function Quiz({ user }) {
   const MIN_QUESTIONS = 10;
   const router = useRouter();
   const email = user?.email;
-  const knowledgeArea = user?.knowledgeArea;
-  const category = user?.category;
+  const knowledgeArea = knowledgeAreaPara;
+  const category = categoryPara;
+  const userId = user._id;
+  //const testId = testId;
 
 
   //FETCHING MARKS AND TIME IN DIFFERENT LEVELS
@@ -286,7 +288,7 @@ export default function Quiz({ user }) {
         body: JSON.stringify({ email, feedback }),
       });
 
-      router.push("/candidate/Dashboard");
+      router.push("/candidate/UserResult");
       const data = await response.json();
       if (data.success) {
         setIsFeedbackSubmitted(true);
@@ -301,18 +303,13 @@ export default function Quiz({ user }) {
   };
 
   const submitResults = async () => {
-    // const email = localStorage.getItem("userEmail");
-    if (!user.email) {
-      alert("Error: User not logged in.");
-      return;
-    }
 
     // Save the quiz result
     await fetch("/api/results/saveresult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email, score, easyCorrect, easyIncorrect, mediumCorrect, mediumIncorrect, hardCorrect, hardIncorrect, questionsAskedl: {
+        email, score, knowledgeArea, easyCorrect, easyIncorrect, mediumCorrect, mediumIncorrect, hardCorrect, hardIncorrect, questionsAskedl: {
           easy: questionsAskedl.easy, // Assuming this is how you're tracking easy questions
           medium: questionsAskedl.medium, // Similarly for medium
           hard: questionsAskedl.hard // Similarly for hard
@@ -325,13 +322,13 @@ export default function Quiz({ user }) {
           alert("Result saved successfully!");
 
           // Update the user's 'test' status to 'notallowed'
-          fetch("/api/testupdate", {
-            method: "PATCH",
+          fetch("/api/tests/testUpdate", {
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               // Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
             },
-            body: JSON.stringify({ email, test: "notallowed" }),
+            body: JSON.stringify({ userId , testId , permission: "notallowed" }),
           })
             .then((response) => response.json())
             .then((updateData) => {

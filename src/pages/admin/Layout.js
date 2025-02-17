@@ -5,15 +5,15 @@ import React from "react";
 import { getSession, signOut } from "next-auth/react";
 
 
-const Layout = ({ children , user }) => {
- 
+const Layout = ({ children, user }) => {
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="fixed w-64 h-full bg-blue-800 text-white flex flex-col p-5 shadow-lg">
         <div className="flex flex-col items-center mb-8">
           <Image
-            src= {user?.image || "/Images/admin.webp"}
+            src={user?.image || "/Images/admin.webp"}
             alt="Admin Profile"
             width={120}
             height={120}
@@ -24,22 +24,7 @@ const Layout = ({ children , user }) => {
         </div>
         <nav className="flex-1">
           <ul className="space-y-4">
-            <li>
-              <Link
-                href="/admin/Result"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
-              >
-                <span>Result</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/admin/Questions/AllQuestions"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
-              >
-                <span>Questions</span>
-              </Link>
-            </li>
+            {/* User & Manager Management */}
             <li>
               <Link
                 href="/admin/users"
@@ -58,18 +43,46 @@ const Layout = ({ children , user }) => {
             </li>
             <li>
               <Link
+                href="/admin/feedback"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+              >
+                <span>Feedbacks</span>
+              </Link>
+            </li>
+
+            {/* Test & Question Management */}
+            <li>
+              <Link
+                href="/admin/ManageTest"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+              >
+                <span>Tests</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/Questions/AllQuestions"
+                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+              >
+                <span>Questions</span>
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin/Questions/KnowledgeArea"
                 className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
                 <span>Knowledge Area</span>
               </Link>
             </li>
+
+            {/* Results & Marks Handling */}
             <li>
               <Link
-                href="/admin/feedback"
+                href="/admin/Result"
                 className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Feedbacks</span>
+                <span>Result</span>
               </Link>
             </li>
             <li>
@@ -80,14 +93,8 @@ const Layout = ({ children , user }) => {
                 <span>Difficulty Level & Marks</span>
               </Link>
             </li>
-            <li>
-              <Link
-                href="/admin/Requests"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
-              >
-                <span>Test Requests</span>
-              </Link>
-            </li>
+
+            {/* Logout at the End */}
             <li>
               <button
                 onClick={() => signOut()}
@@ -97,6 +104,7 @@ const Layout = ({ children , user }) => {
               </button>
             </li>
           </ul>
+
         </nav>
         <footer className="mt-8 text-center text-sm text-gray-300">
           &copy; 2024 Admin Dashboard

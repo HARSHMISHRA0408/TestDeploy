@@ -89,7 +89,8 @@ const CandidateLayout = ({ children, user }) => {
   const menuItems = [
     { href: "/candidate/Dashboard", label: "👥 Dashboard" },
     { href: "/candidate/UserResult", label: "📝 Result" },
-    { href: "/candidate/TestRoute", label: "✅ Take Test" },
+    //{ href: "/candidate/TestRoute", label: "✅ Take Test" },
+    { href: "/candidate/TestInstruction", label: "✅ Take Module" },
   ];
 
   return (
@@ -153,7 +154,7 @@ export async function getServerSideProps(context) {
   if (!session || session.user.role !== "employee") {
     return {
       redirect: {
-        destination: "/testAuth", // Replace with your sign-in page route
+        destination: "/", // Replace with your sign-in page route
         permanent: false,
       },
     };

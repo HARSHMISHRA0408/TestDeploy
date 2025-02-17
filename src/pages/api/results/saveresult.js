@@ -59,6 +59,7 @@ export default async function handler(req, res) {
     const {
       email,
       score,
+      knowledgeArea,
       easyCorrect,
       easyIncorrect,
       mediumCorrect,
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
     } = req.body;
 
     // Basic validation
-    if (!email || score == null || !questionsAskedl) {
+    if (!email || score == null || !questionsAskedl || !knowledgeArea) {
       return res.status(400).json({ success: false, message: 'Email, score, and questionsAsked are required.' });
     }
 
@@ -98,6 +99,7 @@ export default async function handler(req, res) {
         result.attempts.push({
           score: numericScore,
           date: new Date(),
+          knowledgeArea,
           easyCorrect,
           easyIncorrect,
           mediumCorrect,
@@ -114,6 +116,7 @@ export default async function handler(req, res) {
           attempts: [{
             score: numericScore,
             date: new Date(),
+            knowledgearea:knowledgeArea,
             easyCorrect: easyCorrect,
             easyIncorrect: easyIncorrect,
             mediumCorrect: mediumCorrect,

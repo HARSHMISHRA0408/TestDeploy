@@ -18,7 +18,7 @@ const TestInstruction = ({ user }) => {
 
     const handleStartTest = () => {
         if (isButtonActive) {
-            router.push("/quiz/Quiz"); // Change this to your actual test route
+            router.push("/candidate/TestModule"); // Change this to your actual test route
         }
     };
 
@@ -61,7 +61,7 @@ const TestInstruction = ({ user }) => {
                 {!isButtonActive && (
                     <div className="flex items-center justify-center mt-6 text-gray-700">
                         <FaClock className="text-xl animate-pulse mr-2" />
-                        <p className="text-lg font-medium">Please wait... Activating Start Button</p>
+                        <p className="text-lg font-medium">Please wait.. Activating Start Button in 10 seconds</p>
                     </div>
                 )}
 

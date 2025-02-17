@@ -30,6 +30,10 @@ const ResultSchema = new mongoose.Schema({
     required: true,
     unique: true, // To prevent duplicate entries for the same email
   },
+  knowledgeArea: {
+    type: String,
+    // required: true,
+  },
   scores: [
     {
       type: Number,

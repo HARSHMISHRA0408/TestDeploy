@@ -4,7 +4,13 @@ import Layout from "./Layout";
 export default function ManageKnowledgeArea(user) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  //knowledge area for adding new knowledge area in manager profile
   const [knowledgeArea, setKnowledgeArea] = useState("");
+
+  //Fetched knowlwdge area to give data on dropdown menu
+  const [knowledgeAreas, setKnowledgeAreas] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -24,6 +30,18 @@ export default function ManageKnowledgeArea(user) {
       }
     };
     fetchUsers();
+  }, []);
+
+  const fetchKnowledgeAreas = async () => {
+    const res = await fetch("/api/knowledgeAreas");
+    const data = await res.json();
+    if (data.success) {
+      setKnowledgeAreas(data.data);
+    }
+  };
+
+  useEffect(() => {
+    fetchKnowledgeAreas();
   }, []);
 
 
@@ -81,143 +99,85 @@ export default function ManageKnowledgeArea(user) {
   };
 
   return (
-    // <Layout user={user}>
-    //   <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-lg">
-    //     <h2 className="text-2xl font-bold mb-4">Manage Users & Knowledge Areas</h2>
-
-    //     {/* User List */}
-    //     <h3 className="font-semibold">Users:</h3>
-    //     <ul className="mb-4">
-    //       {users.map((user) => (
-    //         <li key={user._id} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
-    //           <span>{user.name} ({user.email})</span>
-    //           <button
-    //             className="bg-blue-500 text-white px-3 py-1 rounded"
-    //             onClick={() => setSelectedUser(user)}
-    //           >
-    //             Edit
-    //           </button>
-    //         </li>
-    //       ))}
-    //     </ul>
-
-    //     {/* Manage Knowledge Areas */}
-    //     {selectedUser && (
-    //       <div className="mt-6 border-t pt-4">
-    //         <h3 className="font-semibold mb-2">Editing: {selectedUser.name}</h3>
-
-    //         {/* Existing Knowledge Areas */}
-    //         <h4 className="font-semibold">Current Knowledge Areas:</h4>
-    //         <ul className="mb-4">
-    //           {selectedUser.manageKnowledgeArea?.map((area, index) => (
-    //             <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
-    //               <span>{area}</span>
-    //               <button
-    //                 className="bg-red-500 text-white px-2 py-1 rounded"
-    //                 onClick={() => handleRemoveKnowledge(area)}
-    //                 disabled={loading}
-    //               >
-    //                 Remove
-    //               </button>
-    //             </li>
-    //           ))}
-    //         </ul>
-
-    //         {/* Add Knowledge Area */}
-    //         <div className="flex gap-2">
-    //           <input
-    //             type="text"
-    //             placeholder="Enter knowledge area"
-    //             value={knowledgeArea}
-    //             onChange={(e) => setKnowledgeArea(e.target.value)}
-    //             className="border p-2 flex-1 rounded"
-    //           />
-    //           <button
-    //             className="bg-green-500 text-white px-4 py-2 rounded"
-    //             onClick={handleAddKnowledge}
-    //             disabled={loading}
-    //           >
-    //             Add
-    //           </button>
-    //         </div>
-
-    //         {message && <p className="mt-4 text-green-600">{message}</p>}
-    //       </div>
-    //     )}
-    //   </div>
-    // </Layout>
     <Layout>
-    <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Manage Users & Knowledge Areas</h2>
+      <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-lg">
+        <h2 className="text-2xl font-bold mb-4">Manage Users & Knowledge Areas</h2>
 
-      {/* User List */}
-      <h3 className="font-semibold">Users:</h3>
-      <ul className="mb-4">
-        {users.map((user) => (
-          <li key={user._id} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
-            <span>{user.name} ({user.email})</span>
-            <button
-              className="bg-blue-500 text-white px-3 py-1 rounded"
-              onClick={() => setSelectedUser(user)}
-            >
-              Edit
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    {/* Modal for Editing Knowledge Areas */}
-    {selectedUser && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 relative">
-          <button 
-            className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-            onClick={() => setSelectedUser(null)}
-          >
-            ✕
-          </button>
-          <h3 className="font-semibold mb-2">Editing: {selectedUser.name}</h3>
-
-          {/* Existing Knowledge Areas */}
-          <h4 className="font-semibold">Current Knowledge Areas:</h4>
-          <ul className="mb-4">
-            {selectedUser.manageKnowledgeArea?.map((area, index) => (
-              <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
-                <span>{area}</span>
-                <button
-                  className="bg-red-500 text-white px-2 py-1 rounded"
-                  onClick={() => handleRemoveKnowledge(area)}
-                  disabled={loading}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Add Knowledge Area */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Enter knowledge area"
-              value={knowledgeArea}
-              onChange={(e) => setKnowledgeArea(e.target.value)}
-              className="border p-2 flex-1 rounded"
-            />
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded"
-              onClick={handleAddKnowledge}
-              disabled={loading}
-            >
-              Add
-            </button>
-          </div>
-
-          {message && <p className="mt-4 text-green-600">{message}</p>}
-        </div>
+        {/* User List */}
+        <h3 className="font-semibold">Users:</h3>
+        <ul className="mb-4">
+          {users.map((user) => (
+            <li key={user._id} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
+              <span>{user.name} ({user.email})</span>
+              <button
+                className="bg-blue-500 text-white px-3 py-1 rounded"
+                onClick={() => setSelectedUser(user)}
+              >
+                Edit
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
-    )}
-  </Layout>
+
+      {/* Modal for Editing Knowledge Areas */}
+      {selectedUser && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setSelectedUser(null)}
+            >
+              ✕
+            </button>
+            <h3 className="font-semibold mb-2">Editing: {selectedUser.name}</h3>
+
+            {/* Existing Knowledge Areas */}
+            <h4 className="font-semibold">Current Knowledge Areas:</h4>
+            <ul className="mb-4">
+              {selectedUser.manageKnowledgeArea?.map((area, index) => (
+                <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded-md mb-2">
+                  <span>{area}</span>
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    onClick={() => handleRemoveKnowledge(area)}
+                    disabled={loading}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mb-4 flex justify-around">
+              <select
+                name="knowledgeArea"
+                value={knowledgeArea}
+                onChange={(e) => setKnowledgeArea(e.target.value)}
+                // onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              >
+                <option value="">Select Knowledge Area</option>
+                {knowledgeAreas.map((area) => (
+                  <option key={area._id} value={area.name}>
+                    {area.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded"
+                onClick={handleAddKnowledge}
+                disabled={loading}
+              >
+                Add
+              </button>
+            </div>
+
+            {message && <p className="mt-4 text-green-600">{message}</p>}
+          </div>
+        </div>
+      )}
+    </Layout>
   );
 }
