@@ -3,12 +3,11 @@ import Layout from "./Layout";
 import { ClipLoader } from "react-spinners";
 import axios from "axios";
 import { getSession } from "next-auth/react";
-import Router, { useRouter } from "next/router";
 import Link from "next/link";
 
 function ManageTest({ user }) {
   const [users, setUsers] = useState([]);
-  //const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -50,7 +49,6 @@ function ManageTest({ user }) {
         .then((updateData) => {
           if (updateData.success) {
             alert("User's test status updated to 'notallowed'.");
-            fetchUsers();
           } else {
             alert(
               updateData.message || "Failed to update user's test status."
@@ -58,7 +56,7 @@ function ManageTest({ user }) {
           }
         })
 
-        fetchUsers();
+
     } catch (error) {
       alert("Error updating user's test status: " + error.message)
     }
@@ -104,11 +102,8 @@ function ManageTest({ user }) {
           user._id === userId ? { ...user, tests: [...user.tests, data.test] } : user
         )
       );
-
       setFilteredUsers((prev) => [...prev]);
       setModalOpen(false);
-      fetchUsers();
-
     } catch (error) {
       console.error("Error adding test:", error);
     } finally {
@@ -133,8 +128,8 @@ function ManageTest({ user }) {
 
   return (
     <Layout user={user}>
-      <div className="container mx-auto py-8 ">
-        <div className="flex justify-between mb-5">
+      <div className="container mx-auto py-8">
+        <div className="flex justify-between p-5">
           {/* <h1 className="text-2xl font-bold mb-4">Manage Users</h1> */}
           <input
             type="text"
@@ -143,8 +138,8 @@ function ManageTest({ user }) {
             placeholder="Search by name, email, or role"
             className="p-2 w-80 border border-gray-300 rounded-lg"
           />
-          <Link
-            href="/admin/AssignMultipleTest"
+           <Link
+            href="/manager/AssignMultipleTest"
             className="flex items-center space-x-2 bg-yellow-400 py-2 px-4 rounded-md hover:bg-yellow-500 transition duration-200"
           >
             <span>👤Add test to multiple users</span>
@@ -167,7 +162,7 @@ function ManageTest({ user }) {
               <p><strong>Role:</strong> {user.role}</p>
 
               <h3 className="text-xl font-semibold mt-4">Existing Tests</h3>
-
+              
               {/* //listing all test and manageing tests and permissions  */}
               {Array.isArray(user.tests) && user.tests.length > 0 ? (
                 <div className="space-y-4">
@@ -175,7 +170,7 @@ function ManageTest({ user }) {
                     <div key={test?._id || Math.random()} className="flex justify-between bg-gray-100 p-4 rounded-md">
                       <p>
                         {test?.name || "Unknown Test"} - {test?.category || "Unknown Category"} (
-                        {test?.permission === "allowed" ? "pending" : "Not Allowed"})
+                        {test?.permission === "allowed" ? "Allowed" : "Not Allowed"})
                       </p>
                       <button
                         className="px-4 py-2 text-white bg-red-500 rounded-md"
@@ -185,7 +180,7 @@ function ManageTest({ user }) {
                       </button>
                       {test.permission === "pending" && (  // Corrected this part
                         <button
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                          className="bg-blue-500 text-white px-4 py-2 rounded"
                           onClick={() => UpdateTestStatus(user._id, test._id, "allowed")}
                         >
                           Approve
@@ -193,7 +188,7 @@ function ManageTest({ user }) {
                       )}
                       {test.permission === "pending" && (  // Corrected this part
                         <button
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                          className="bg-blue-500 text-white px-4 py-2 rounded"
                           onClick={() => UpdateTestStatus(user._id, test._id, "rejected")}
                         >
                           Reject
@@ -343,7 +338,7 @@ const AddTestModal = ({ isOpen, onClose, handleAddTest, userId }) => {
 export async function getServerSideProps(context) {
   const session = await getSession(context);
 
-  if (!session || session.user.role !== "admin") {
+  if (!session || session.user.role !== "manager") {
     return {
       redirect: {
         destination: "/", // Replace with your sign-in page route

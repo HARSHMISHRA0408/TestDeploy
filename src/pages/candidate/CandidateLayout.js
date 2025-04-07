@@ -90,13 +90,13 @@ const CandidateLayout = ({ children, user }) => {
     { href: "/candidate/Dashboard", label: "👥 Dashboard" },
     { href: "/candidate/UserResult", label: "📝 Result" },
     //{ href: "/candidate/TestRoute", label: "✅ Take Test" },
-    { href: "/candidate/TestInstruction", label: "✅ Take Module" },
+    { href: "/candidate/TestInstruction", label: "✅ Take Test" },
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-72 bg-blue-800 text-white flex flex-col">
+      <aside className="w-72 bg-blue-300 text-white flex flex-col">
         <div className="flex flex-col items-center py-8">
           <Link href="/candidate/Dashboard">
             <Image
@@ -116,7 +116,7 @@ const CandidateLayout = ({ children, user }) => {
               <li key={index}>
                 <Link
                   href={item.href}
-                  className="block w-2/3 mx-auto px-6 py-3 bg-blue-700 rounded-lg hover:bg-blue-600 text-left transition"
+                  className="block w-2/3 mx-auto px-6 py-3 bg-blue-500 rounded-lg hover:bg-blue-600 text-left transition"
                 >
                   {item.label}
                 </Link>
@@ -125,7 +125,7 @@ const CandidateLayout = ({ children, user }) => {
             <li>
               <button
                 onClick={() => signOut()}
-                className="block w-2/3 mx-auto px-6 py-3 bg-red-600 rounded-lg hover:bg-red-500 text-left transition text-white"
+                className="block w-2/3 mx-auto px-6 py-3 bg-red-500 rounded-lg hover:bg-red-400 text-left transition text-white"
               >
                 🚪 Logout
               </button>
@@ -140,7 +140,7 @@ const CandidateLayout = ({ children, user }) => {
           <h2 className="text-2xl font-bold text-gray-800">Welcome {user.name}!</h2>
 
         </header>
-        <main className="p-6 flex-1 bg-white shadow-md rounded-lg">{children}</main>
+        <main className="p-6 flex-1 bg-custom shadow-md">{children}</main>
       </div>
     </div>
   );

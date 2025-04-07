@@ -88,9 +88,6 @@ export default function ResultsPage({ user }) {
               <thead className="bg-blue-600 text-white ">
                 <tr  >
                   <th className="px-6 py-4  text-sm font-medium uppercase tracking-wider text-center">
-                    Email
-                  </th>
-                  <th className="px-6 py-4  text-sm font-medium uppercase tracking-wider text-center">
                     Attempts
                   </th>
                 </tr>
@@ -99,34 +96,11 @@ export default function ResultsPage({ user }) {
                 {filteredResults.length > 0 ? (
                   filteredResults.map((result) => (
                     <tr key={result._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-800 font-medium">
-                        {result.email}
-                      </td>
-                      {/* <td className="px-6 py-4 text-sm text-gray-700">
-                        <ul className="space-y-1 ">
-                          {result.attempts.map((attempt) => (
-                            <Link href={`/candidate/TestDashboard/${attempt._id}`}>
-                              <li key={attempt._id} className="text-gray-600 m-1 border border-gray-300 p-2 rounded-lg display: flex flex-wrap justify-around">
-                                <div>
-                                <span className="font-medium text-blue-600">Score:</span>{' '}
-                                {attempt.score},{' '}
-                                <span className="font-medium text-blue-600">Date:</span>{' '}
-                                {new Date(attempt.date).toLocaleString()}
-                                </div>
-                                <div>
-                                <span className="font-medium text-blue-600 ">Result Dashboard 🎯</span>{' '}
-                                </div>
-                                
-                              </li>
-                            </Link>
-                          ))}
-                        </ul>
-                      </td> */}
                       <td className="px-6 py-4 text-sm text-gray-700">
                         <ul className="space-y-1">
                           {result.attempts.map((attempt) => (
                             <Link key={attempt._id} href={`/candidate/TestDashboard/${attempt._id}`}>
-                              <li className="text-gray-600 m-1 border border-gray-300 p-2 rounded-lg flex flex-wrap justify-around">
+                              <li className="text-gray-600 m-1 border border-gray-300 p-4 rounded-lg flex flex-wrap justify-around">
                                 <div>
                                   <span className="font-medium text-blue-600">Score:</span>{' '}
                                   {attempt.score},{' '}

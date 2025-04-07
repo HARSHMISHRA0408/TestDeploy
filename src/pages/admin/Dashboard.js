@@ -6,7 +6,7 @@ import { getSession, signOut } from "next-auth/react";
 const Dashboard = ({ user }) => {
   return (
     <Layout user={user}>
-      <div className="max-h-screen flex flex-col items-center justify-center mt-4 ">
+      <div className="max-h-screen flex flex-col items-center justify-center mt-4  ">
         <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl w-full">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
@@ -39,10 +39,10 @@ const Dashboard = ({ user }) => {
             </button>
 
             <button
-              onClick={() => window.location.href = "/admin/Requests"}
+              onClick={() => window.location.href = "/admin/ManageTest"}
               className="p-6 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             >
-              <h2 className="text-2xl font-semibold mb-2">Test Request&#39;s</h2>
+              <h2 className="text-2xl font-semibold mb-2">Test&#39;s</h2>
               <p>Manage user test requests.</p>
             </button>
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+//import goolgeLogo from "../../../public/Images/googlelogo"
 
 function Login() {
   const router = useRouter();
@@ -28,10 +29,10 @@ function Login() {
 
   return (
     <div
-      className="flex items-center justify-center h-screen"
+      className="flex items-center justify-center h-screen  bg-custom"
       style={{ backgroundColor: "#fdf5f3" }}
     >
-      <div className="flex rounded-lg overflow-hidden shadow-lg bg-white w-4/5 h-[600px] p-7 relative">
+      <div className="flex rounded-lg overflow-hidden shadow-lg bg-white bg-opacity-60  w-4/5 h-[600px] p-7 relative">
         {/* Spinner Overlay */}
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
@@ -40,13 +41,13 @@ function Login() {
         )}
 
 
-        <div className="flex items-center justify-center w-1/2 bg-white">
+        <div className="flex items-center justify-center w-1/2">
           <Image
-            src="/login.svg"
+            src="/Images/pixelcut-export.png"
             alt="Side Image"
-            width={200}
-            height={200}
-            className="w-full h-auto object-contain p-1"
+            width={380}
+            height={380}
+            className="w-auto h-auto object-contain "
           />
         </div>
         {/* Right Side - Login Form */}
@@ -55,10 +56,10 @@ function Login() {
           {/* Company Logo */}
           <Image
             src="/Images/image.png"
-            alt="Company Logo"
-            width={120}
-            height={120}
-            className="text-center"
+            alt="Viyal Logo"
+            width={200}
+            height={200}
+            className="text-center pb-16"
           />
 
           {/* Google Sign-In Button */}
@@ -75,6 +76,7 @@ function Login() {
               <path fill="#FBBC05" d="M24 45.5c6.5 0 12.2-2.2 16.7-6l-6.2-5c-2.5 1.8-5.8 3-9.5 3-5.9 0-11.3-3.8-13.5-9.1l-6.4 5C9.2 40 16 45.5 24 45.5z" />
               <path fill="#EA4335" d="M44.5 20H24v8.5h11.9C34.3 33.5 30 37 24 37c-6.9 0-12.5-5.6-12.5-12.5S17.1 12 24 12c3 0 5.7 1.1 7.8 3l5.8-5.8C33.7 5.5 29.1 3.5 24 3.5 12.3 3.5 3 12.8 3 24.5S12.3 45.5 24 45.5C35.7 45.5 44 36.2 44 24.5c0-1.5-.2-3-.5-4.5z" />
             </svg>
+            {/* <googlelogo/> */}
             Sign in with Google
           </button>
         </div>

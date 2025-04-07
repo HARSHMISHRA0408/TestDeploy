@@ -2,13 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import Router, { useRouter } from "next/router";
 import React from 'react';
 import { getSession } from 'next-auth/react';
+import Link from "next/link";
+//import feedbackForm from "./feedbackForm";
 
-export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}) {
+
+export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) {
   const [questions, setQuestions] = useState({ easy: [], medium: [], hard: [] });
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [currentDifficulty, setCurrentDifficulty] = useState("easy");
   const [score, setScore] = useState(0);
   const [questionsAsked, setQuestionsAsked] = useState(0);
+  const [testSize, setTestSize] = useState(null);
+  // const [error, setError] = useState(null);
   // MARKS AND TIME
   const [easyMarks, setEasyMarks] = useState(null);
   const [mediumMarks, setMediumMarks] = useState(null);
@@ -29,22 +34,16 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
   // Track number of questions asked per difficulty level
   const [questionsAskedl, setQuestionsAskedl] = useState({ easy: 0, medium: 0, hard: 0 });
 
-
-
-
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
   const [feedback, setFeedback] = useState("");
-  // const [tokenData, setTokenData] = useState(null);
   const askedQuestions = useRef(new Set());
   const consecutiveIncorrect = useRef(0);
-  const MIN_QUESTIONS = 10;
-  const router = useRouter();
   const email = user?.email;
   const knowledgeArea = knowledgeAreaPara;
   const category = categoryPara;
   const userId = user._id;
-  //const testId = testId;
+
 
 
   //FETCHING MARKS AND TIME IN DIFFERENT LEVELS
@@ -57,6 +56,7 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
         const data = await response.json();
         if (!data?.data) throw new Error("Invalid response format.");
         console.log("Parsed response data:", data);
+
 
         // Process the data to set marks and time for each level
         const levels = data.data;
@@ -87,6 +87,23 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
   }, []);
 
 
+  /////////////////////////////////////////test sizeee
+  useEffect(() => {
+
+    const fetchTestSize = async () => {
+      try {
+        const response = await fetch("/api/tests/testSize");
+        const data = await response.json();
+        setTestSize(data.testSizes[0].size);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchTestSize();
+  }, []);
+
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -94,12 +111,10 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
 
         const response = await fetch("/api/questions/getQuestions");
         if (!response.ok) throw new Error("Failed to fetch questions: " + response.statusText);
-
         console.log("API response received successfully.");
 
         const data = await response.json();
         console.log("Parsed response data:", data);
-
         if (!data?.data) throw new Error("Invalid response format.");
 
         const allQuestions = data.data;
@@ -233,7 +248,7 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
   const handleNextQuestion = (isCorrect) => {
     setQuestionsAsked((prev) => prev + 1);
 
-    if (questionsAsked >= MIN_QUESTIONS) {
+    if (questionsAsked >= testSize) {
       setIsQuizComplete(true);
       submitResults();
       return;
@@ -288,11 +303,12 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
         body: JSON.stringify({ email, feedback }),
       });
 
-      router.push("/candidate/UserResult");
+
       const data = await response.json();
       if (data.success) {
         setIsFeedbackSubmitted(true);
         alert("Feedback submitted successfully!");
+        //router.push("/candidate/TestModule");
       } else {
         alert("Error submitting feedback.");
       }
@@ -328,7 +344,7 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
               "Content-Type": "application/json",
               // Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
             },
-            body: JSON.stringify({ userId , testId , permission: "notallowed" }),
+            body: JSON.stringify({ userId, testId, permission: "notallowed" }),
           })
             .then((response) => response.json())
             .then((updateData) => {
@@ -349,10 +365,7 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
       })
       .catch((error) => alert("Error saving result: " + error.message))
       .finally(() => setIsQuizComplete(true));
-
-
   };
-
 
   return (
     <div className="quiz-container mx-auto mt-10 max-w-3xl bg-white shadow-lg rounded-lg p-6">
@@ -428,13 +441,25 @@ export default function Quiz({ user , knowledgeAreaPara , categoryPara , testId}
               />
               <button
                 type="submit"
-                className="py-2 px-6 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow transition duration-200"
+                disabled={!feedback.trim()} // Disable if only spaces
+                className={`py-2 px-6 font-bold rounded-lg shadow transition duration-200 ${feedback.trim() ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-400 cursor-not-allowed"
+                  }`}
               >
                 Submit Feedback
               </button>
+              
             </form>
           ) : (
-            <p className="text-green-600 font-medium">Thank you for your feedback!</p>
+            <div>
+              <p className="text-green-600 font-medium">Thank you for your feedback!</p>
+              <br />
+              <Link
+                href="/candidate/TestInstruction"
+                className=" px-6 py-3 bg-green-400 rounded-lg hover:bg-orange-400 text-left transition m-3"
+              >
+                Take Pending Tests
+              </Link>
+            </div>
           )}
         </div>
       )}
@@ -461,4 +486,3 @@ export async function getServerSideProps(context) {
     },
   };
 }
-

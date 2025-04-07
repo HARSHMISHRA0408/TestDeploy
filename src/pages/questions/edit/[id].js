@@ -334,7 +334,7 @@ export default function EditQuestion() {
     const data = await res.json();
     if (data.success) {
       alert("Updated Successfully");
-      Router.push("/admin/Questions/AllQuestions");
+      Router.push("/manager/Questions/AllQuestions");
     }
   };
 

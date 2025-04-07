@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import Layout from "./Layout";
+import { getSession } from "next-auth/react";
 
-export default function ManageKnowledgeArea(user) {
+export default function ManageManager({user}) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -99,7 +100,7 @@ export default function ManageKnowledgeArea(user) {
   };
 
   return (
-    <Layout>
+    <Layout user={user}>
       <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-bold mb-4">Manage Users & Knowledge Areas</h2>
 
@@ -180,4 +181,28 @@ export default function ManageKnowledgeArea(user) {
       )}
     </Layout>
   );
+
+
+  
+}
+
+
+// Protect the page with server-side authentication
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "admin") {
+    return {
+      redirect: {
+        destination: "/", // Replace with your sign-in page route
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      user: session.user, // Pass user data to the component
+    },
+  };
 }

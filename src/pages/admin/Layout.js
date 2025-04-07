@@ -1,16 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import Router from "next/router";
-import React from "react";
+import React, { useState } from "react";
 import { getSession, signOut } from "next-auth/react";
 
 
+
 const Layout = ({ children, user }) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(true); // Sidebar open state
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="fixed w-64 h-full bg-blue-800 text-white flex flex-col p-5 shadow-lg">
+      <aside
+        className={`fixed h-full bg-blue-700 text-white flex flex-col p-5 shadow-lg transition-all duration-300 ${isSidebarOpen ? "w-64 left-0" : "-left-64"
+          }`}
+      >
         <div className="flex flex-col items-center mb-8">
           <Image
             src={user?.image || "/Images/admin.webp"}
@@ -28,25 +33,25 @@ const Layout = ({ children, user }) => {
             <li>
               <Link
                 href="/admin/users"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Users</span>
+                <span>👤 Users</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/admin/manager"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Managers</span>
+                <span>🧑‍💼 Managers</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/admin/feedback"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Feedbacks</span>
+                <span>💬 Feedbacks</span>
               </Link>
             </li>
 
@@ -54,25 +59,25 @@ const Layout = ({ children, user }) => {
             <li>
               <Link
                 href="/admin/ManageTest"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Tests</span>
+                <span>📝 Tests</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/admin/Questions/AllQuestions"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Questions</span>
+                <span>❓ Questions</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/admin/Questions/KnowledgeArea"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Knowledge Area</span>
+                <span>📚 Knowledge Area</span>
               </Link>
             </li>
 
@@ -80,17 +85,17 @@ const Layout = ({ children, user }) => {
             <li>
               <Link
                 href="/admin/Result"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Result</span>
+                <span>🏆 Results</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/admin/Marks"
-                className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
               >
-                <span>Difficulty Level & Marks</span>
+                <span>📊 Difficulty & Marks</span>
               </Link>
             </li>
 
@@ -100,7 +105,7 @@ const Layout = ({ children, user }) => {
                 onClick={() => signOut()}
                 className="flex items-center space-x-2 bg-red-500 py-2 px-4 rounded-md hover:bg-red-600 transition duration-200 w-full text-left"
               >
-                <span>Logout</span>
+                <span>🚪 Logout</span>
               </button>
             </li>
           </ul>
@@ -110,10 +115,29 @@ const Layout = ({ children, user }) => {
           &copy; 2024 Admin Dashboard
         </footer>
       </aside>
+      {/* Open Sidebar Button (only visible when sidebar is closed) */}
+      {!isSidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-5 left-5 bg-blue-800 text-white p-3 rounded-full shadow-lg ml-5 hover:bg-blue-700 transition"
+        >
+          ☰
+        </button>
+      )}
+
+      {/* Close Sidebar Button (inside the sidebar) */}
+      {isSidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="fixed top-5 left-5 bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition text-white"
+        >
+          ✖
+        </button>
+      )}
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-64 bg-white shadow-lg">
-        <header className="bg-gray-100 p-6 shadow-md">
+      <div className={`flex-1 ${isSidebarOpen ? "ml-64" : "ml-0"} bg-white shadow-lg transition-all duration-300`}>
+        <header className="bg-gray-100 p-6 shadow-md flex justify-center items-center">
           <h2 className="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
         </header>
         <main className="p-6">{children}</main>
@@ -129,7 +153,7 @@ export async function getServerSideProps(context) {
   if (!session || session.user.role !== "admin") {
     return {
       redirect: {
-        destination: "/testAuth", // Replace with your sign-in page route
+        destination: "/", // Replace with your sign-in page route
         permanent: false,
       },
     };

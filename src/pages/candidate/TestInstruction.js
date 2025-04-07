@@ -11,7 +11,7 @@ const TestInstruction = ({ user }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsButtonActive(true);
-        }, 10000); // 10 seconds delay
+        }, 2000); // 5 seconds delay
         //window.history.forward(); // Prevent user from going back to the previous page
         return () => clearTimeout(timer);
     }, []);
@@ -61,7 +61,7 @@ const TestInstruction = ({ user }) => {
                 {!isButtonActive && (
                     <div className="flex items-center justify-center mt-6 text-gray-700">
                         <FaClock className="text-xl animate-pulse mr-2" />
-                        <p className="text-lg font-medium">Please wait.. Activating Start Button in 10 seconds</p>
+                        <p className="text-lg font-medium">Please wait.. Activating Start Button in 5 seconds</p>
                     </div>
                 )}
 

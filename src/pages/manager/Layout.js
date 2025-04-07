@@ -5,20 +5,20 @@ import Router from "next/router";
 import React, { useState } from "react";
 import { getSession } from "next-auth/react";
 
-const Layout = ({ children , user }) => {
+const Layout = ({ children, user }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true); // Sidebar open state
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`fixed h-full bg-blue-800 text-white flex flex-col p-5 shadow-lg transition-all duration-300 ${isSidebarOpen ? "w-64 left-0" : "-left-64"
+        className={`fixed h-full bg-blue-700 text-white flex flex-col p-5 shadow-lg transition-all duration-300 ${isSidebarOpen ? "w-64 left-0" : "-left-64"
           }`}
       >
         <div className="flex flex-col items-center mb-8">
           <Image
-            src={ user?.image || "/Images/admin.webp"}
-            alt="Admin Profile"
+            src={user?.image || "/Images/admin.webp"}
+            alt="Manager Profile"
             width={120}
             height={120}
             className="rounded-full border-4 border-gray-300 shadow-lg cursor-pointer"
@@ -31,22 +31,24 @@ const Layout = ({ children , user }) => {
         <nav className="flex-1">
           <ul className="space-y-4">
             {[
-              { name: "Result", path: "/manager/Result" },
-              { name: "Questions", path: "/manager/Questions/AllQuestions" },
-              { name: "Users", path: "/manager/users" },
-              { name: "Feedbacks", path: "/manager/feedback" },
-              { name: "Difficulty Level & Marks", path: "/manager/Marks" },
-              { name: "Test Requests", path: "/manager/Requests" },
-            ].map((item) => (
-              <li key={item.name}>
-                <Link
-                  href={item.path}
-                  className="flex items-center space-x-2 bg-blue-700 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
-                >
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
+              { name: "👥 Users", path: "/manager/users" }, // User management should come first
+              { name: "📝 Manage Test", path: "/manager/ManageTest" }, // Managing tests follows user management
+              { name: "❓ Questions", path: "/manager/Questions/AllQuestions" }, // Questions related to tests
+              { name: "📊 Difficulty & Marks", path: "/manager/Marks" }, // Evaluation criteria
+              { name: "📄 Result", path: "/manager/Result" }, // Results come after evaluation
+              { name: "💬 Feedbacks", path: "/manager/feedback" }, // Feedback from users after results
+              // { name: "📝 Test Requests", path: "/manager/Requests" } // Requests should be at the end
+            ]
+              .map((item) => (
+                <li key={item.name}>
+                  <Link
+                    href={item.path}
+                    className="flex items-center space-x-2 bg-blue-500 py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+                  >
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              ))}
           </ul>
         </nav>
 
@@ -77,19 +79,20 @@ const Layout = ({ children , user }) => {
       {isSidebarOpen && (
         <button
           onClick={() => setSidebarOpen(false)}
-          className="absolute top-5 left-5 bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition text-white"
+          className="fixed top-5 left-5 bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition text-white"
         >
           ✖
         </button>
+
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 ${isSidebarOpen ? "ml-64" : "ml-0"} bg-white shadow-lg transition-all duration-300`}>
-        <header className="bg-gray-100 p-6 shadow-md flex justify-center items-center">
+      <div className={`flex-1 ${isSidebarOpen ? "ml-64" : "ml-0"}  shadow-lg transition-all duration-300`}>
+        <header className=" p-6 shadow-sm flex justify-center items-center">
           <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
         </header>
 
-        <main className="p-6">{children}</main>
+        <main className="p-6 ">{children}</main>
       </div>
     </div>
   );

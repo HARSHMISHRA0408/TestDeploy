@@ -38,6 +38,11 @@ function KnowledgeAreasPage({ user }) {
   const addCategoryField = () =>
     setForm({ ...form, categories: [...form.categories, ""] });
 
+  const removeCategoryField = (index) => {
+    const newCategories = form.categories.filter((_, i) => i !== index);
+    setForm({ ...form, categories: newCategories });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editing ? "PUT" : "POST";
@@ -116,7 +121,7 @@ function KnowledgeAreasPage({ user }) {
           </div>
 
           {form.categories.map((category, index) => (
-            <div key={index} className="mb-4">
+            <div key={index} className="mb-4 flex items-center">
               <input
                 type="text"
                 name="categories"
@@ -126,6 +131,13 @@ function KnowledgeAreasPage({ user }) {
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+              <button
+                type="button"
+                onClick={() => removeCategoryField(index)}
+                className="ml-2 bg-red-500 text-white p-3 rounded hover:bg-red-600 transition-all"
+              >
+                Remove
+              </button>
             </div>
           ))}
 
@@ -188,7 +200,7 @@ export async function getServerSideProps(context) {
   if (!session || session.user.role !== "admin") {
     return {
       redirect: {
-        destination: "/testAuth", // Replace with your sign-in page route
+        destination: "/", // Replace with your sign-in page route
         permanent: false,
       },
     };

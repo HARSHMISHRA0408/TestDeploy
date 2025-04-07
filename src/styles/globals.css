@@ -35,3 +35,9 @@ body {
 #nprogress .spinner {
   display: none;    /* Hide the spinner if you only want the top bar */
 }
+
+
+.bg-custom {
+  background: url('../../public/Images/bg.webp') no-repeat center center fixed; 
+  background-size: cover;
+}
