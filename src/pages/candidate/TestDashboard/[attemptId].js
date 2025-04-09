@@ -114,11 +114,15 @@ const AttemptDashboard = () => {
         <div className="flex justify-evenly grid-cols-2 gap-4 md:grid-cols-3 mb-6">
           <div className="bg-gray-50 p-4 rounded-lg text-center shadow-sm">
             <p className="text-lg text-gray-700">Total Score</p>
+<<<<<<< HEAD
             <p className="text-2xl font-bold text-gray-900 flex items-baseline gap-1">
               <span className="text-3xl">{attempt.score}</span>
               <span className="text-xl">/ {attempt.maxScore}</span>
             </p>
             
+=======
+            <p className="text-2xl font-bold text-gray-900">{attempt.score}</p>
+>>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
           </div>
           <div className="bg-gray-50 p-4 rounded-lg text-center shadow-sm col-span-2 md:col-span-1">
             <p className="text-lg text-gray-700">Date</p>

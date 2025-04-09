@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import Layout from './Layout';
 import React from "react";
 import { getSession, signOut } from "next-auth/react";
+<<<<<<< HEAD
 import Link from 'next/link';
+=======
+>>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
 
 
@@ -83,7 +86,11 @@ export default function ResultsPage({ user }) {
                   {/* Attempts Table */}
                   <div className="bg-white rounded-b-lg p-2">
                     <table className="min-w-full">
+<<<<<<< HEAD
                       <thead className=" text-gray-600">
+=======
+                      <thead className="bg-gray-100 text-gray-600">
+>>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
                         <tr>
                           <th className="text-left px-6 py-2   font-semibold text-sm">Score</th>
                           <th className="text-left px-6 py-2 font-semibold text-sm">Date</th>
@@ -95,6 +102,7 @@ export default function ResultsPage({ user }) {
                             <tr key={attempt._id} className="border-b hover:bg-gray-50">
                               <td className="px-6 py-4 text-gray-700">{attempt.score}</td>
                               <td className="px-6 py-4 text-gray-700">{new Date(attempt.date).toLocaleString()}</td>
+<<<<<<< HEAD
                               <td><Link key={attempt._id} href={`/admin/TestDashboard/${attempt._id}`}>
                               <li className="text-gray-600 m-1 border border-gray-300 p-4 rounded-lg flex flex-wrap justify-around">
                                 {/* <div>
@@ -108,6 +116,8 @@ export default function ResultsPage({ user }) {
                                 </div>
                               </li>
                             </Link></td>
+=======
+>>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
                             </tr>
                           ))
                         ) : (
