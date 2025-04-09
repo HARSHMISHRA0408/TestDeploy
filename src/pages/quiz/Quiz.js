@@ -88,7 +88,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
 
   /////////////////////////////////////////test sizeee
   useEffect(() => {
-
     const fetchTestSize = async () => {
       try {
         const response = await fetch("/api/tests/testSize");
@@ -237,10 +236,11 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     setQuestionsAsked((prev) => prev + 1);
   
     if (questionsAsked >= testSize) {
-      setIsQuizComplete(true);
       submitResults();
+      setIsQuizComplete(true); 
       return;
     }
+    
   
     let nextDifficulty = currentDifficulty;
   
@@ -292,16 +292,44 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   ]);
 
   //HANDLEING IF TIME BECOMES 0.
-  useEffect(() => {
-    if (timeLeft === 0) {
-      handleNextQuestion(false);
-      return;
-    }
-    if (currentQuestion && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-      return () => clearInterval(timer);
-    }
-  }, [currentQuestion, timeLeft, handleNextQuestion]);
+  // useEffect(() => {
+  //   if (timeLeft === 0) {
+  //     if(questionsAsked >= testSize){
+  //       console.log("hitting submit button on time end and last question ");
+  //       submitResults();
+  //       setIsQuizComplete(true); 
+  //     }
+  //     handleNextQuestion(false);
+  //     return;
+  //   }
+  //   if (currentQuestion && timeLeft > 0) {
+  //     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+  //     return () => clearInterval(timer);
+  //   }
+  // }, [currentQuestion, timeLeft, handleNextQuestion,testSize,questionsAsked,submitResults]);
+  // 1. Countdown timer - just handles ticking
+useEffect(() => {
+  if (!currentQuestion || timeLeft <= 0) return;
+
+  const timer = setInterval(() => {
+    setTimeLeft((prev) => prev - 1);
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [currentQuestion, timeLeft]);
+
+// 2. Handle when time runs out
+useEffect(() => {
+  if (timeLeft !== 0) return;
+
+  if (questionsAsked >= testSize) {
+    submitResults();
+    setIsQuizComplete(true);
+  } else {
+    handleNextQuestion(false);
+  }
+}, [timeLeft]);
+
 
 
   const handleAnswer = (optionText) => {
