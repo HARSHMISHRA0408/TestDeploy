@@ -66,19 +66,11 @@ export default async function handler(req, res) {
       mediumIncorrect,
       hardCorrect,
       hardIncorrect,
-<<<<<<< HEAD
       maxScore
     } = req.body;
 
     // Basic validation
     if (!email || score == null || !maxScore || !knowledgeArea) {
-=======
-      questionsAskedl
-    } = req.body;
-
-    // Basic validation
-    if (!email || score == null || !questionsAskedl || !knowledgeArea) {
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
       return res.status(400).json({ success: false, message: 'Email, score, and questionsAsked are required.' });
     }
 
@@ -87,18 +79,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Score must be a number.' });
     }
 
-<<<<<<< HEAD
-=======
-    // Validation for questionsAsked structure
-    if (
-      typeof questionsAskedl !== 'object' || 
-      !('easy' in questionsAskedl) || 
-      !('medium' in questionsAskedl) || 
-      !('hard' in questionsAskedl)
-    ) {
-      return res.status(400).json({ success: false, message: 'Invalid questionsAsked structure.' });
-    }
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
     try {
       // Find or create a result document
@@ -117,11 +97,7 @@ export default async function handler(req, res) {
           mediumIncorrect,
           hardCorrect,
           hardIncorrect,
-<<<<<<< HEAD
           maxScore
-=======
-          questionsAskedl
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
         });
       } else {
         // Create a new result if it doesn't exist
@@ -138,11 +114,7 @@ export default async function handler(req, res) {
             mediumIncorrect: mediumIncorrect,
             hardCorrect: hardCorrect,
             hardIncorrect: hardIncorrect,
-<<<<<<< HEAD
             maxScore: maxScore
-=======
-            questionsAsked: questionsAskedl
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
           }]
         });
       }

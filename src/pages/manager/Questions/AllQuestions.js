@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Layout from "../Layout"; // Adjust the path if needed
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
 import React from "react";
 import { getSession } from "next-auth/react";
@@ -43,19 +43,20 @@ function AllQuestions({ user }) {
     }
   };
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     setLoading(true);
     try {
-      const userKnowledgeAreas = user.manageKnowledgeArea || []; // Get current user's manageKnowledgeArea
-
+      const userKnowledgeAreas = user?.manageKnowledgeArea || [];
+  
       const res = await fetch("/api/questions/getQuestions");
       const dataun = await res.json();
       console.log("API Response:", dataun);
-
+  
       if (Array.isArray(dataun.data)) {
-        // Filter questions where the knowledge_area matches any of the user's manageKnowledgeArea areas
         const filteredQuestions = dataun.data.filter((question) =>
-          userKnowledgeAreas.some((area) => question.knowledge_area === area) // Check if any area matches
+          userKnowledgeAreas.some(
+            (area) => question.knowledge_area === area
+          )
         );
         setQuestions(filteredQuestions);
         console.log("Filtered Questions:", filteredQuestions);
@@ -64,9 +65,14 @@ function AllQuestions({ user }) {
       }
     } catch (error) {
       console.error("Error fetching questions:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [user?.manageKnowledgeArea]);
+  
+  useEffect(() => {
+      fetchQuestions();
+  }, [fetchQuestions]);
 
 
 
@@ -78,9 +84,9 @@ function AllQuestions({ user }) {
     question.question.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
+  // useEffect(() => {
+  //   fetchQuestions();
+  // }, []);
 
   return (
     <Layout user={user}>

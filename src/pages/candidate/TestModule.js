@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import React from "react";
 import { getSession } from "next-auth/react";
-import CandidateLayout from "./CandidateLayout";
 import Quiz from "../quiz/Quiz"; // Ensure correct path
 import Link from "next/link";
 
@@ -14,13 +13,9 @@ export default function FetchTests({ user }) {
   //const [userId, setuserId] = useState(null);
   //const [testId , settestId] = useState(null);
 
-  useEffect(() => {
-    if (user?._id) {
-      fetchTests();
-    }
-  }, [user?._id]);
-
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async () => {
+    if (!user?._id) return;
+  
     setLoading(true);
     try {
       const response = await axios.get(`/api/tests/testGet?userId=${user._id}`);
@@ -30,7 +25,11 @@ export default function FetchTests({ user }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?._id]);
+  
+  useEffect(() => {
+    fetchTests();
+  }, [fetchTests]);
 
   const UpdateTestStatus = (testId) => {
     try {

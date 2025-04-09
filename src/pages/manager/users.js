@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Layout from "./Layout";
 import { ClipLoader } from "react-spinners"; // Import spinner from react-spinners
 import { getSession } from "next-auth/react";
@@ -23,30 +23,29 @@ function UsersPage({ user }) {
   const [categories, setCategories] = useState([]);
 
 
-
-  const fetchKnowledgeAreas = async () => {
+  const fetchKnowledgeAreas = useCallback(async () => {
     const res = await fetch("/api/knowledgeAreas");
     const data = await res.json();
     if (data.success) {
       setKnowledgeAreas(data.data);
     }
-  };
-
-  const fetchUsers = async () => {
-    setLoading(true);
+  }, []); // No dependency needed
   
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
     try {
-      const userKnowledgeAreas = user.manageKnowledgeArea || []; // Get current user's manageKnowledgeArea
+      const userKnowledgeAreas = user?.manageKnowledgeArea || [];
   
       const res = await fetch("/api/user");
       const data = await res.json();
   
       if (data.success) {
-        // Filter users whose knowledgeArea matches any of the current user's manageKnowledgeArea
-        const filtered = data.data.filter((fetchedUser) => {
-          // Ensure that the fetchedUser.knowledgeArea exists and is a string
-          return fetchedUser.knowledgeArea && userKnowledgeAreas.some(area => fetchedUser.knowledgeArea.includes(area));
-        });
+        const filtered = data.data.filter((fetchedUser) =>
+          fetchedUser.knowledgeArea &&
+          userKnowledgeAreas.some((area) =>
+            fetchedUser.knowledgeArea.includes(area)
+          )
+        );
   
         setUsers(filtered);
         setFilteredUsers(filtered);
@@ -56,12 +55,14 @@ function UsersPage({ user }) {
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [user?.manageKnowledgeArea]);
+  
   useEffect(() => {
-    fetchUsers();
+    //if (user?.manageKnowledgeArea) {
+      fetchUsers();
+  //}
     fetchKnowledgeAreas();
-  }, [user.knowledgeArea]);
+  }, [fetchUsers, fetchKnowledgeAreas]);
 
 
   // Update categories when knowledgeArea changes
