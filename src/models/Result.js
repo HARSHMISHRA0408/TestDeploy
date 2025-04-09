@@ -50,21 +50,9 @@ const ResultSchema = new mongoose.Schema({
       mediumIncorrect: { type: Number, default: 0 },
       hardCorrect: { type: Number, default: 0 },
       hardIncorrect: { type: Number, default: 0 },
-<<<<<<< HEAD
       maxScore: { type: Number, required: true }
-=======
-      questionsAsked: {
-        easy: { type: Number, default: 0 },
-        medium: { type: Number, default: 0 },
-        hard: { type: Number, default: 0 },
-      },
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
     },
   ],
 });
 
-<<<<<<< HEAD
 export default mongoose.models.NewResults || mongoose.model('NewResults', ResultSchema);
-=======
-export default mongoose.models.Results || mongoose.model('Results', ResultSchema);
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35

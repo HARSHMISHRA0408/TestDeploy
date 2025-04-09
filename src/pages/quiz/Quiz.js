@@ -3,10 +3,7 @@ import Router, { useRouter } from "next/router";
 import React from 'react';
 import { getSession } from 'next-auth/react';
 import Link from "next/link";
-<<<<<<< HEAD
 import { useCallback } from "react";
-=======
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 //import feedbackForm from "./feedbackForm";
 
 
@@ -17,11 +14,7 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   const [score, setScore] = useState(0);
   const [questionsAsked, setQuestionsAsked] = useState(0);
   const [testSize, setTestSize] = useState(null);
-<<<<<<< HEAD
   const [error, setError] = useState(null);
-=======
-  // const [error, setError] = useState(null);
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
   // MARKS AND TIME
   const [easyMarks, setEasyMarks] = useState(null);
   const [mediumMarks, setMediumMarks] = useState(null);
@@ -30,10 +23,7 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   const [mediumTime, setMediumTime] = useState(null);
   const [hardTime, setHardTime] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
-<<<<<<< HEAD
   const [maxScore, setmaxScore] = useState(null);
-=======
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
   //tracking to create result dashboard
   const [easyCorrect, setEasyCorrect] = useState(0);
@@ -43,12 +33,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   const [mediumIncorrect, setMediumIncorrect] = useState(0);
   const [hardIncorrect, setHardIncorrect] = useState(0);
 
-<<<<<<< HEAD
-=======
-  // Track number of questions asked per difficulty level
-  const [questionsAskedl, setQuestionsAskedl] = useState({ easy: 0, medium: 0, hard: 0 });
-
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -118,13 +102,10 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     fetchTestSize();
   }, []);
 
-<<<<<<< HEAD
   useEffect(() => {
     setmaxScore(easyMarks + mediumMarks + (testSize - 2) * hardMarks);
   }, [easyMarks, mediumMarks, hardMarks, testSize]);
   
-=======
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -142,13 +123,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
         const allQuestions = data.data;
         console.log("Total questions fetched:", allQuestions.length);
 
-<<<<<<< HEAD
-=======
-        // Apply filters based on knowledgeArea and category
-        // const { knowledgeArea, category } = tokenData || {};
-        console.log("Applying filters with knowledgeArea:", knowledgeArea, "and category:", category);
-
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
         const filteredQuestions = allQuestions.filter(
           (q) =>
             (!knowledgeArea || q.knowledge_area === knowledgeArea) &&
@@ -190,7 +164,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     }
   }, [knowledgeArea, category]);
 
-<<<<<<< HEAD
   const submitResults = useCallback(async () => {
     try {
       const response = await fetch("/api/results/saveresult", {
@@ -317,8 +290,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     getNextQuestion,
     submitResults,
   ]);
-=======
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
   //HANDLEING IF TIME BECOMES 0.
   useEffect(() => {
@@ -330,41 +301,12 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
       const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
       return () => clearInterval(timer);
     }
-<<<<<<< HEAD
   }, [currentQuestion, timeLeft, handleNextQuestion]);
 
 
   const handleAnswer = (optionText) => {
     // const isCorrect = optionText === currentQuestion.correct_option;
     const isCorrect = optionText.trim().toLowerCase() === currentQuestion.correct_option.trim().toLowerCase();
-=======
-  }, [currentQuestion, timeLeft]);
-
-
-  const handleAnswer = (optionText) => {
-    const isCorrect = optionText === currentQuestion.correct_option;
-
-    if (currentDifficulty === "easy") {
-      setQuestionsAskedl((prev) => ({
-        ...prev, // Keep previous values
-        easy: prev.easy + 1,
-      }));
-
-    } else if (currentDifficulty === "medium") {
-      setQuestionsAskedl((prev) => ({
-        ...prev, // Keep previous values
-        medium: prev.medium + 1,
-      }));
-
-    } else if (currentDifficulty === "hard") {
-      setQuestionsAskedl((prev) => ({
-        ...prev, // Keep previous values
-        hard: prev.hard + 1,
-      }));
-
-    }
-
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
 
     if (isCorrect) {
       // Increment score based on difficulty level
@@ -401,59 +343,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     handleNextQuestion(isCorrect);
   };
 
-<<<<<<< HEAD
-=======
-
-
-  const getNextQuestion = (difficulty) => {
-    const difficultyArray = questions[difficulty];
-    return difficultyArray.find((q) => !askedQuestions.current.has(q._id || q.question));
-  };
-
-  const handleNextQuestion = (isCorrect) => {
-    setQuestionsAsked((prev) => prev + 1);
-
-    if (questionsAsked >= testSize) {
-      setIsQuizComplete(true);
-      submitResults();
-      return;
-    }
-
-    let nextDifficulty = currentDifficulty;
-
-    if (!isCorrect && consecutiveIncorrect.current >= 3) {
-      if (currentDifficulty === "medium") {
-        nextDifficulty = "easy";
-      } else if (currentDifficulty === "hard") {
-        nextDifficulty = "medium";
-      }
-      consecutiveIncorrect.current = 0; // Reset counter after difficulty decrease
-    } else if (isCorrect) {
-      if (currentDifficulty === "easy" && questions.medium.length > 0) {
-        nextDifficulty = "medium";
-      } else if (currentDifficulty === "medium" && questions.hard.length > 0) {
-        nextDifficulty = "hard";
-      }
-    }
-
-    let nextQuestion = getNextQuestion(nextDifficulty);
-
-    if (!nextQuestion) {
-      nextQuestion = getNextQuestion(currentDifficulty);
-    }
-
-    if (nextQuestion) {
-      setCurrentQuestion(nextQuestion);
-      setCurrentDifficulty(nextDifficulty);
-      //Edit Time Here
-      setTimeLeft(nextDifficulty === "easy" ? easyTime : nextDifficulty === "medium" ? mediumTime : hardTime); //Time for each question
-      askedQuestions.current.add(nextQuestion._id || nextQuestion.question);
-    } else {
-      setIsQuizComplete(true);
-    }
-  };
-
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
 
@@ -484,58 +373,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
 
   };
 
-<<<<<<< HEAD
-=======
-  const submitResults = async () => {
-
-    // Save the quiz result
-    await fetch("/api/results/saveresult", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email, score, knowledgeArea, easyCorrect, easyIncorrect, mediumCorrect, mediumIncorrect, hardCorrect, hardIncorrect, questionsAskedl: {
-          easy: questionsAskedl.easy, // Assuming this is how you're tracking easy questions
-          medium: questionsAskedl.medium, // Similarly for medium
-          hard: questionsAskedl.hard // Similarly for hard
-        }
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert("Result saved successfully!");
-
-          // Update the user's 'test' status to 'notallowed'
-          fetch("/api/tests/testUpdate", {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              // Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
-            },
-            body: JSON.stringify({ userId, testId, permission: "notallowed" }),
-          })
-            .then((response) => response.json())
-            .then((updateData) => {
-              if (updateData.success) {
-                alert("User's test status updated to 'notallowed'.");
-              } else {
-                alert(
-                  updateData.message || "Failed to update user's test status."
-                );
-              }
-            })
-            .catch((error) =>
-              alert("Error updating user's test status: " + error.message)
-            );
-        } else {
-          alert(data.message || "Failed to save the quiz result.");
-        }
-      })
-      .catch((error) => alert("Error saving result: " + error.message))
-      .finally(() => setIsQuizComplete(true));
-  };
-
->>>>>>> e5dd2ba35305ffd9782cea154391c3b5ae847a35
   return (
     <div className="quiz-container mx-auto mt-10 max-w-3xl bg-white shadow-lg rounded-lg p-6">
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Quiz</h1>
