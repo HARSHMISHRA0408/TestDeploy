@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fdf5f3;
+  /* --foreground: #171717; */
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* globals.css */
+#nprogress .bar {
+  background: #29d; /* Change this to your preferred color */
+  height: 4px;      /* Adjust the height of the top loader */
+}
+
+#nprogress .spinner {
+  display: none;    /* Hide the spinner if you only want the top bar */
+}
+
+
+.bg-custom {
+  background: url('../../public/Images/bg.webp') no-repeat center center fixed; 
+  background-size: cover;
+}
