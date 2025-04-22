@@ -12,7 +12,7 @@ function AllQuestions({ initialQuestions = [], user }) {
   const [loading, setLoading] = useState(false);
   
   const [knowledgeAreas, setKnowledgeAreas] = useState([]); // Initialize as an empty array
-  const [knowledgeArea, setKnowledgeArea] = useState("");
+  const [knowledgeArea, setKnowledgeArea] = useState('all');
   const [difficulty, setDifficulty] = useState('all');
 
 
