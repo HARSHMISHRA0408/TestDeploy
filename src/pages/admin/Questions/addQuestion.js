@@ -16,7 +16,7 @@ export default function AddQuestion() {
   const [knowledgeAreas, setKnowledgeAreas] = useState([]); // Initialize as an empty array
   const [categories, setCategories] = useState([]);
 
-  // Fetch knowledge areas and categories from the API
+
   // Fetch knowledge areas and categories from the API
   useEffect(() => {
     async function fetchData() {
