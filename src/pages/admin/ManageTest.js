@@ -98,7 +98,7 @@ function ManageTest({ user }) {
         category,
         knowledgeArea,
       });
-
+      await fetchUsers();
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === userId ? { ...user, tests: [...user.tests, data.test] } : user

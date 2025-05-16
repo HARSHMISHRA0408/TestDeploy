@@ -52,7 +52,7 @@ export default function FetchTests({ user }) {
             );
           }
         })
-
+        fetchTests();
 
     } catch (error) {
       alert("Error updating user's test status: " + error.message)
@@ -112,7 +112,7 @@ export default function FetchTests({ user }) {
                   {test.permission === "notallowed" && (
                     <button
                       className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded min-w-[120px] text-center"
-                      onClick={() => { UpdateTestStatus(test._id); fetchTests(); }}
+                      onClick={() => { UpdateTestStatus(test._id); }}
                     >
                       🔄 Request Retest
                     </button>

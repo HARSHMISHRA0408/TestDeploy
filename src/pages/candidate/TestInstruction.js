@@ -61,7 +61,7 @@ const TestInstruction = ({ user }) => {
                 {!isButtonActive && (
                     <div className="flex items-center justify-center mt-6 text-gray-700">
                         <FaClock className="text-xl animate-pulse mr-2" />
-                        <p className="text-lg font-medium">Please wait.. Activating Start Button in 5 seconds</p>
+                        <p className="text-lg font-medium">Please wait.. Activating Start Button in few seconds</p>
                     </div>
                 )}
 

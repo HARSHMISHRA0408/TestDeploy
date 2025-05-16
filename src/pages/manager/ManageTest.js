@@ -16,7 +16,6 @@ function ManageTest({ user }) {
 
   useEffect(() => {
     fetchUsers();
-
   }, []);
 
   const fetchUsers = async () => {
@@ -96,7 +95,7 @@ function ManageTest({ user }) {
         category,
         knowledgeArea,
       });
-
+      await fetchUsers(); // temp solution 
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === userId ? { ...user, tests: [...user.tests, data.test] } : user
