@@ -1,239 +1,163 @@
-import { useState, useEffect, useMemo } from "react";
+
+
+import { useState, useMemo, useEffect } from "react";
 import Layout from "./Layout";
 import { ClipLoader } from "react-spinners";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { getSession } from "next-auth/react";
-import Router, { useRouter } from "next/router";
 import Link from "next/link";
+import { getSession } from "next-auth/react";
 
+// Fetch all users + their tests
+const fetchUsers = async () => {
+  const { data } = await axios.get("/api/user");
+  if (!data.success) throw new Error("Failed to fetch users");
+  return data.data; // list of users
+};
+
+// API calls for mutations:
+const updateStatus = async ({ userId, testId, permission }) => {
+  const { data } = await axios.put("/api/tests/testUpdate", { userId, testId, permission });
+  if (!data.success) throw new Error(data.message || "Failed update");
+  return data;
+};
+
+const deleteTest = async ({ userId, testId }) => {
+  await axios.delete("/api/tests/testDelete", { data: { userId, testId } });
+  return { userId, testId };
+};
+
+const addTest = async ({ userId, testName, category, knowledgeArea }) => {
+  const { data } = await axios.post("/api/tests/testPost", { userId, testName, category, knowledgeArea });
+  return { userId, test: data.test };
+};
 function ManageTest({ user }) {
-  const [users, setUsers] = useState([]);
-  //const [filteredUsers, setFilteredUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchUsers();
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
 
-  }, []);
+  const statusMutation = useMutation({
+    mutationFn: updateStatus,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] }) // ✅ Re-fetch updated data
+    },
+  });
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get("/api/user");
-      if (data.success) {
-        setUsers(data.data);
-        setFilteredUsers(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteTest,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] }) // ✅ Re-fetch updated data
+    },
+  });
 
-  const UpdateTestStatus = (userId, testId, permission) => {
-    try {
-      // Update the user's 'test' status to 'notallowed'
-      fetch("/api/tests/testUpdate", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${localStorage.getItem("token")}`, // Ensure token is stored and retrieved
-        },
-        body: JSON.stringify({ userId, testId, permission }),
-      })
-        .then((response) => response.json())
-        .then((updateData) => {
-          if (updateData.success) {
-            alert("User's test status updated to 'notallowed'.");
-            fetchUsers();
-          } else {
-            alert(
-              updateData.message || "Failed to update user's test status."
-            );
-          }
-        })
-
-        fetchUsers();
-    } catch (error) {
-      alert("Error updating user's test status: " + error.message)
-    }
-  }
-
-
-  const handleDeleteTest = async (userId, testId) => {
-    try {
-      setLoading(true);
-      await axios.delete("/api/tests/testDelete", { data: { userId, testId } });
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId
-            ? { ...user, tests: user.tests.filter((test) => test._id !== testId) }
-            : user
-        )
-      );
-      setFilteredUsers((prev) => [...prev]);
-    } catch (error) {
-      console.error("Error deleting test:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddTest = async (userId, testName, category, knowledgeArea) => {
-    if (!testName || !category || !knowledgeArea) {
-      alert("All fields are required");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data } = await axios.post("/api/tests/testPost", {
-        userId,
-        testName,
-        category,
-        knowledgeArea,
-      });
-      await fetchUsers();
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, tests: [...user.tests, data.test] } : user
-        )
-      );
-
-      setFilteredUsers((prev) => [...prev]);
+  const addMutation = useMutation({
+    mutationFn: addTest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       setModalOpen(false);
-      fetchUsers();
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] }) // ✅ Re-fetch updated data
+    },
+  });
 
-    } catch (error) {
-      console.error("Error adding test:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-  };
 
   const displayedUsers = useMemo(() => {
-    return users.filter(
-      (user) =>
-        user.name.toLowerCase().includes(searchQuery) ||
-        user.email.toLowerCase().includes(searchQuery) ||
-        user.category.toLowerCase().includes(searchQuery) ||
-        user.role.toLowerCase().includes(searchQuery)
-    );
-  }, [searchQuery, users]);
+    const q = searchQuery.toLowerCase();
+    return users
+      .filter(usr => usr.role.toLowerCase() === "employee")
+      .filter(usr =>
+        usr.name.toLowerCase().includes(q) ||
+        usr.email.toLowerCase().includes(q) ||
+        usr.category.toLowerCase().includes(q)
+      );
+  }, [users, searchQuery]);
+
 
   return (
     <Layout user={user}>
-      <div className="container mx-auto py-8 ">
+      <div className="container mx-auto py-8">
         <div className="flex justify-between mb-5">
-          {/* <h1 className="text-2xl font-bold mb-4">Manage Users</h1> */}
           <input
-            type="text"
+            placeholder="Search..."
             value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search by name, email, or role"
-            className="p-2 w-80 border border-gray-300 rounded-lg"
+            onChange={e => setSearchQuery(e.target.value)}
+            className="p-2 w-80 border rounded"
           />
-          <Link
-            href="/admin/AssignMultipleTest"
-            className="flex items-center space-x-2 bg-yellow-400 py-2 px-4 rounded-md hover:bg-yellow-500 transition duration-200"
-          >
-            <span>👤Add test to multiple users</span>
+          <Link href="/admin/AssignMultipleTest">
+            <div className="bg-yellow-400 py-2 px-4 rounded hover:bg-yellow-500">Add test to multiple users</div>
           </Link>
         </div>
 
-        {loading && (
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <ClipLoader size={50} color="#3498db" loading={loading} />
+            <ClipLoader size={50} color="#3498db" loading />
           </div>
-        )}
-
-        <div className="space-y-4">
-          {displayedUsers.map((user) => (
-            <div key={user._id} className="border p-4 rounded-lg">
-              <p><strong>Name:</strong> {user.name}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Knowledge Area:</strong> {user.knowledgeArea}</p>
-              <p><strong>Category:</strong> {user.category}</p>
-              <p><strong>Role:</strong> {user.role}</p>
-
-              <h3 className="text-xl font-semibold mt-4">Existing Tests</h3>
-
-              {/* //listing all test and manageing tests and permissions  */}
-              {Array.isArray(user.tests) && user.tests.length > 0 ? (
-                <div className="space-y-4">
-                  {user.tests.filter(Boolean).map((test) => (
-                    <div key={test?._id || Math.random()} className="flex justify-between bg-gray-100 p-4 rounded-md">
-                      <p>
-                        {test?.name || "Unknown Test"} - {test?.category || "Unknown Category"} (
-                        {test?.permission === "allowed" ? "pending" : "Not Allowed"})
-                      </p>
-                      <button
-                        className="px-4 py-2 text-white bg-red-500 rounded-md"
-                        onClick={() => test?._id && handleDeleteTest(user._id, test._id)}
-                      >
-                        Delete
-                      </button>
-                      {test.permission === "pending" && (  // Corrected this part
+        ) : (
+          displayedUsers.map(u => (
+            <div key={u._id} className="border p-4 rounded-lg mb-4">
+              <p><strong>{u.name}</strong> – {u.email}</p>
+              <p>{u.knowledgeArea} / {u.category} / {u.role}</p>
+              {(u.tests || []).map(t => (
+                <div key={t._id} className="flex justify-between bg-gray-100 p-2 my-2 rounded">
+                  <span>{t.name} – {t.category} ({t.permission})</span>
+                  <div className="space-x-2">
+                    <button
+                      className="px-3 py-1 bg-red-500 text-white rounded"
+                      onClick={() => deleteMutation.mutate({ userId: u._id, testId: t._id })}
+                    >
+                      Delete
+                    </button>
+                    {t.permission === "pending" && (
+                      <>
                         <button
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-                          onClick={() => UpdateTestStatus(user._id, test._id, "allowed")}
+                          className="px-3 py-1 bg-green-500 text-white rounded"
+                          onClick={() => statusMutation.mutate({ userId: u._id, testId: t._id, permission: "allowed" })}
                         >
                           Approve
                         </button>
-                      )}
-                      {test.permission === "pending" && (  // Corrected this part
                         <button
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                          onClick={() => UpdateTestStatus(user._id, test._id, "rejected")}
+                          className="px-3 py-1 bg-red-500 text-white rounded"
+                          onClick={() => statusMutation.mutate({ userId: u._id, testId: t._id, permission: "rejected" })}
                         >
                           Reject
                         </button>
-                      )}
-
-                      {test.permission === "rejected" && (  // Corrected this part
-                        <button
-                          className="bg-blue-500 text-white px-4 py-2 rounded"
-                          onClick={() => UpdateTestStatus(user._id, test._id, "allowed")}
-                        >
-                          Remove Restriction
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                      </>
+                    )}
+                    {t.permission === "rejected" && (
+                      <button
+                        className="px-3 py-1 bg-blue-500 text-white rounded"
+                        onClick={() => statusMutation.mutate({ userId: u._id, testId: t._id, permission: "allowed" })}
+                      >
+                        Permit Again
+                      </button>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <p>No tests available</p>
-              )}
-
-
+              ))}
               <button
-                className="px-4 py-2 text-white bg-blue-500 rounded-md mt-4"
-                onClick={() => {
-                  setSelectedUserId(user._id);
-                  setModalOpen(true);
-                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={() => { setSelectedUserId(u._id); setModalOpen(true); }}
               >
                 Add Test
               </button>
             </div>
-          ))}
-        </div>
+          ))
+        )}
 
         {modalOpen && (
           <AddTestModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
-            handleAddTest={handleAddTest}
+            onAdd={addMutation.mutate}
             userId={selectedUserId}
           />
         )}
@@ -242,101 +166,54 @@ function ManageTest({ user }) {
   );
 }
 
-const AddTestModal = ({ isOpen, onClose, handleAddTest, userId }) => {
+// 🎯 Modal Component
+function AddTestModal({ isOpen, onClose, onAdd, userId }) {
   const [testName, setTestName] = useState("");
-  const [category, setCategory] = useState("");
-  const [knowledgeArea, setKnowledgeArea] = useState("");
   const [knowledgeAreas, setKnowledgeAreas] = useState([]);
+  const [knowledgeArea, setKnowledgeArea] = useState("");
   const [categories, setCategories] = useState([]);
-
-  const fetchKnowledgeAreas = async () => {
-    try {
-      const { data } = await axios.get("/api/knowledgeAreas");
-      if (data.success) setKnowledgeAreas(data.data);
-    } catch (error) {
-      console.error("Error fetching knowledge areas:", error);
-    }
-  };
+  const [category, setCategory] = useState("");
 
   useEffect(() => {
-    fetchKnowledgeAreas();
+    axios.get("/api/knowledgeAreas").then(r => {
+      if (r.data.success) setKnowledgeAreas(r.data.data);
+    });
   }, []);
-  // Update categories when knowledgeArea changes
-  useEffect(() => {
-    if (knowledgeArea) {
-      const selectedArea = knowledgeAreas.find(
-        (area) => area.name === knowledgeArea
-      );
-      setCategories(selectedArea ? selectedArea.categories : []);
-    } else {
-      setCategories([]);
-    }
-  }, [knowledgeArea, knowledgeAreas]);
 
-  const handleSubmit = () => {
-    if (!testName || !category || !knowledgeArea) {
-      alert("All fields are required");
-      return;
-    }
-    handleAddTest(userId, testName, category, knowledgeArea);
-    onClose();
-  };
+  useEffect(() => {
+    const area = knowledgeAreas.find(a => a.name === knowledgeArea);
+    setCategories(area?.categories || []);
+    setCategory("");
+  }, [knowledgeArea, knowledgeAreas]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Add New Test</h2>
-        <input type="text" placeholder="Test Name" value={testName} onChange={(e) => setTestName(e.target.value)} className="w-full p-2 border border-gray-300 rounded mb-2" />
-
-        {/* <input type="text" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-2 border border-gray-300 rounded mb-2" /> */}
-
-        {/* <input type="text" placeholder="Knowledge Area" value={knowledgeArea} onChange={(e) => setKnowledgeArea(e.target.value)} className="w-full p-2 border border-gray-300 rounded mb-4" /> */}
-        <div className="mb-4">
-          <label className="block text-gray-700">Knowledge Area:</label>
-          <select
-            name="knowledgeArea"
-            value={knowledgeArea}
-            onChange={(e) => setKnowledgeArea(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          >
-            <option value="">Select Knowledge Area</option>
-            {knowledgeAreas.map((area) => (
-              <option key={area._id} value={area.name}>
-                {area.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Category:</label>
-          <select
-            name="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          >
-            <option value="">Select Category</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category.name}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex justify-between">
+      <div className="bg-white p-6 w-96 rounded shadow-lg">
+        <h3 className="text-xl mb-4">Add Test</h3>
+        <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test Name" className="w-full p-2 border rounded mb-3" />
+        <select value={knowledgeArea} onChange={e => setKnowledgeArea(e.target.value)} className="w-full p-2 border rounded mb-3">
+          <option>Select Knowledge Area</option>
+          {knowledgeAreas.map(a => <option key={a._id} value={a.name}>{a.name}</option>)}
+        </select>
+        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2 border rounded mb-3">
+          <option>Select Category</option>
+          {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+        </select>
+        <div className="flex justify-end space-x-3">
           <button onClick={onClose} className="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
-          <button onClick={handleSubmit} className="px-4 py-2 bg-blue-500 text-white rounded">Add Test</button>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+            onClick={() => onAdd({ userId, testName, knowledgeArea, category })}
+          >
+            Add
+          </button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 
 // Protect the page with server-side authentication

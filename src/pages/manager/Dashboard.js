@@ -34,7 +34,7 @@ const Dashboard = ({ user }) => {
                 </tr>
                 <tr>
                   <td className="px-6 py-4 text-gray-800 font-medium capitalize">
-                  Managing
+                    Managing
                   </td>
                   <td className="px-6 py-4 text-gray-600">{user.manageKnowledgeArea.join(" || ")}</td>
                 </tr>
@@ -42,35 +42,33 @@ const Dashboard = ({ user }) => {
             </table>
           </div>
           {/* Placeholder for dashboard features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link
-              href="/manager/users"
-              className="flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-blue-500 transition duration-200"
-            >
-              <div className="p-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg shadow-lg text-center">
-                <h2 className="text-2xl font-semibold mb-2">Users</h2>
-                <p>Manage user accounts and access levels.</p>
-              </div>
-            </Link>
-            <Link
-              href="/manager/Result"
-              className="flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-green-500 transition duration-200"
-            >
-              <div className="p-6 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg shadow-lg text-center">
-                <h2 className="text-2xl font-semibold mb-2">Results</h2>
-                <p>View and analyze system reports.</p>
-              </div>
-            </Link>
+  
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
 
-            <Link
-              href="/manager/Marks"
-              className="flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-red-500 transition duration-200"
+            <button
+              onClick={() => window.location.href = "/manager/users"}
+              className="p-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             >
-              <div className="p-6 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg shadow-lg text-center">
-                <h2 className="text-2xl font-semibold mb-2">Settings</h2>
-                <p>Configure application settings and preferences.</p>
-              </div>
-            </Link>
+              <h2 className="text-2xl font-semibold mb-2">Users</h2>
+              <p>Manage user accounts and access levels.</p>
+            </button>
+
+            <button
+              onClick={() => window.location.href = "/manager/Result"}
+              className="p-6 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            >
+              <h2 className="text-2xl font-semibold mb-2">Result&#39;s</h2>
+              <p>Test result.</p>
+            </button>
+
+            <button
+              onClick={() => window.location.href = "/manager/ManageTest"}
+              className="p-6 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            >
+              <h2 className="text-2xl font-semibold mb-2">Test&#39;s</h2>
+              <p>Manage user test requests.</p>
+            </button>
+
 
           </div>
 

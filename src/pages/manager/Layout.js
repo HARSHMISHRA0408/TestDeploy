@@ -89,7 +89,7 @@ const Layout = ({ children, user }) => {
       {/* Main Content Area */}
       <div className={`flex-1 ${isSidebarOpen ? "ml-64" : "ml-0"}  shadow-lg transition-all duration-300`}>
         <header className=" p-6 shadow-sm flex justify-center items-center">
-          <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Manager Dashboard</h2>
         </header>
 
         <main className="p-6 ">{children}</main>

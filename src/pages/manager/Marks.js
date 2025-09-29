@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import Layout from "./Layout";
 import { getSession } from "next-auth/react";
 import EditTestSizeForm from "../../Components/EditTestSizeForm";
-import EditMarkForm from "../../Components/EditMarksForm"; // New Component
+import EditMarkForm from "../../Components/EditMarksForm";
+import QuestionCount from "@/Components/questionCount";
 
 function MarksPage({ user }) {
   const [marks, setMarks] = useState([]);
@@ -44,51 +45,73 @@ function MarksPage({ user }) {
   return (
     <Layout user={user}>
       <div className="container mx-auto py-10 px-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Manage Marks</h1>
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-800">Marks & Test Management</h1>
+          <p className="text-gray-600 mt-2">Manage marks, test sizes, and view available question counts.</p>
+        </div>
 
+        {/* Success/Error Message */}
         {message && (
-          <p className={`text-center mb-6 ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>
+          <div
+            className={`mb-6 p-3 rounded-lg text-center ${
+              message.includes("successfully")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
             {message}
-          </p>
+          </div>
         )}
 
         {/* Marks List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {marks.map((mark) => (
-            <div key={mark._id} className="bg-white shadow rounded-lg p-6 flex flex-col justify-between">
-              <div>
-                <p className="text-lg font-semibold text-gray-700 mb-2">
-                  Level: <span className="text-gray-800">{mark.level}</span>
-                </p>
-                <p className="text-gray-600 mb-1">
-                  Time: <span className="font-medium text-gray-800">{mark.time} mins</span>
-                </p>
-                <p className="text-gray-600">
-                  Marks: <span className="font-medium text-gray-800">{mark.marks}</span>
-                </p>
-              </div>
-              <button
-                onClick={() => setEditingMark(mark)}
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all"
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Marks Configuration</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {marks.map((mark) => (
+              <div
+                key={mark._id}
+                className="bg-white shadow-md rounded-xl p-6 flex flex-col justify-between border border-gray-200 hover:shadow-lg transition"
               >
-                Edit
-              </button>
+                <div>
+                  <p className="text-lg font-bold text-gray-800 mb-2">{mark.level}</p>
+                  <p className="text-gray-600">Time: <span className="font-medium">{mark.time} mins</span></p>
+                  <p className="text-gray-600">Marks: <span className="font-medium">{mark.marks}</span></p>
+                </div>
+                <button
+                  onClick={() => setEditingMark(mark)}
+                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition"
+                >
+                  Edit
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Test Size Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Test Size Management</h2>
+          <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-lg font-semibold text-gray-800">
+                Current Test Size: <span className="text-blue-600">{testSize}</span>
+              </p>
+              <p className="text-gray-500 text-sm">Adjust the number of questions per test.</p>
             </div>
-          ))}
-        </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setEditingSize(true)}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition"
+              >
+                Edit Test Size
+              </button>
+              <QuestionCount />
+            </div>
+          </div>
+        </section>
 
-        {/* Manage Test Size */}
-        <div className="text-center mt-10">
-          <h2 className="text-xl font-semibold text-gray-700">Test Size: {testSize}</h2>
-          <button
-            onClick={() => setEditingSize(true)}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all"
-          >
-            Edit Test Size
-          </button>
-        </div>
-
-        {/* Render EditTestSizeForm when editingSize is true */}
+        {/* Edit Test Size Modal */}
         {editingSize && (
           <EditTestSizeForm
             testSize={testSize}
@@ -98,7 +121,7 @@ function MarksPage({ user }) {
           />
         )}
 
-        {/* Render EditMarkForm when a mark is being edited */}
+        {/* Edit Marks Modal */}
         {editingMark && (
           <EditMarkForm
             mark={editingMark}
@@ -110,6 +133,7 @@ function MarksPage({ user }) {
     </Layout>
   );
 }
+
 
 // Protect the page with server-side authentication
 export async function getServerSideProps(context) {

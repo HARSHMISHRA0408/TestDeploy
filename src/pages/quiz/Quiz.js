@@ -1,19 +1,26 @@
 import { useState, useEffect, useRef } from "react";
-import Router, { useRouter } from "next/router";
-import React from 'react';
-import { getSession } from 'next-auth/react';
+import React from "react";
+import { getSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback } from "react";
 //import feedbackForm from "./feedbackForm";
 
-
-export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) {
-  const [questions, setQuestions] = useState({ easy: [], medium: [], hard: [] });
+export default function Quiz({
+  user,
+  knowledgeAreaPara,
+  categoryPara,
+  testId,
+}) {
+  const [questions, setQuestions] = useState({
+    easy: [],
+    medium: [],
+    hard: [],
+  });
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [currentDifficulty, setCurrentDifficulty] = useState("easy");
   const [score, setScore] = useState(0);
-  const [questionsAsked, setQuestionsAsked] = useState(0);
-  const [testSize, setTestSize] = useState(null);
+  const [questionsAsked, setQuestionsAsked] = useState(1);
+  const [testSize, setTestSize] = useState(0);
   const [error, setError] = useState(null);
   // MARKS AND TIME
   const [easyMarks, setEasyMarks] = useState(null);
@@ -43,26 +50,26 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   const category = categoryPara;
   const userId = user._id;
 
-
-
   //FETCHING MARKS AND TIME IN DIFFERENT LEVELS
   useEffect(() => {
     const fetchMarksAndTime = async () => {
       try {
         const response = await fetch("/api/marks");
-        if (!response.ok) throw new Error("Failed to fetch marks and time: " + response.statusText);
+        if (!response.ok)
+          throw new Error(
+            "Failed to fetch marks and time: " + response.statusText
+          );
 
         const data = await response.json();
         if (!data?.data) throw new Error("Invalid response format.");
         console.log("Parsed response data:", data);
 
-
         // Process the data to set marks and time for each level
         const levels = data.data;
 
-        const easyLevel = levels.find(level => level.level === "easy");
-        const mediumLevel = levels.find(level => level.level === "medium");
-        const hardLevel = levels.find(level => level.level === "hard");
+        const easyLevel = levels.find((level) => level.level === "easy");
+        const mediumLevel = levels.find((level) => level.level === "medium");
+        const hardLevel = levels.find((level) => level.level === "hard");
 
         if (easyLevel) {
           setEasyMarks(easyLevel.marks);
@@ -85,7 +92,6 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     fetchMarksAndTime();
   }, []);
 
-
   /////////////////////////////////////////test sizeee
   useEffect(() => {
     const fetchTestSize = async () => {
@@ -104,50 +110,50 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
   useEffect(() => {
     setmaxScore(easyMarks + mediumMarks + (testSize - 2) * hardMarks);
   }, [easyMarks, mediumMarks, hardMarks, testSize]);
-  
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         console.log("Fetching questions from the API...");
-
         const response = await fetch("/api/questions/getQuestions");
-        if (!response.ok) throw new Error("Failed to fetch questions: " + response.statusText);
-        console.log("API response received successfully.");
+        if (!response.ok)
+          throw new Error("Failed to fetch questions: " + response.statusText);
 
         const data = await response.json();
-        console.log("Parsed response data:", data);
+
         if (!data?.data) throw new Error("Invalid response format.");
 
         const allQuestions = data.data;
-        console.log("Total questions fetched:", allQuestions.length);
 
         const filteredQuestions = allQuestions.filter(
           (q) =>
             (!knowledgeArea || q.knowledge_area === knowledgeArea) &&
             (!category || q.category === category)
         );
-        console.log("Filtered questions count:", filteredQuestions.length);
+        //console.log("Filtered questions count:", filteredQuestions.length);
 
         // Divide questions by difficulty
-        const easy = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "easy");
-        const medium = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "medium");
-        const hard = filteredQuestions.filter((q) => q.difficulty.toLowerCase() === "hard");
-
-        console.log("Easy questions count:", easy.length);
-        console.log("Medium questions count:", medium.length);
-        console.log("Hard questions count:", hard.length);
+        const easy = filteredQuestions.filter(
+          (q) => q.difficulty.toLowerCase() === "easy"
+        );
+        const medium = filteredQuestions.filter(
+          (q) => q.difficulty.toLowerCase() === "medium"
+        );
+        const hard = filteredQuestions.filter(
+          (q) => q.difficulty.toLowerCase() === "hard"
+        );
 
         setQuestions({ easy, medium, hard });
 
         // Set the first question
         const firstEasy = easy[0];
         if (firstEasy) {
-          console.log("Setting the first easy question as current question:", firstEasy);
           setCurrentQuestion(firstEasy);
           askedQuestions.current.add(firstEasy._id || firstEasy.question); // Unique identifier
         } else {
-          console.log("No easy questions found to set as the current question.");
+          console.log(
+            "No easy questions found to set as the current question."
+          );
         }
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -181,21 +187,21 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
           maxScore,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
         alert("Result saved successfully!");
-  
+
         // Update user's test status
         const updateResponse = await fetch("/api/tests/testUpdate", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, testId, permission: "notallowed" }),
         });
-  
+
         const updateData = await updateResponse.json();
-  
+
         if (updateData.success) {
           alert("User's test status updated to 'notallowed'.");
         } else {
@@ -225,121 +231,130 @@ export default function Quiz({ user, knowledgeAreaPara, categoryPara, testId }) 
     setIsQuizComplete,
   ]);
 
-  const getNextQuestion = useCallback((difficulty) => {
-    const difficultyArray = questions[difficulty];
-    return difficultyArray.find(
-      (q) => !askedQuestions.current.has(q._id || q.question)
-    );
-  }, [questions]);
-
-  const handleNextQuestion = useCallback((isCorrect) => {
-    setQuestionsAsked((prev) => prev + 1);
-  
-    if (questionsAsked >= testSize) {
-      submitResults();
-      setIsQuizComplete(true); 
-      return;
-    }
-    
-  
-    let nextDifficulty = currentDifficulty;
-  
-    if (!isCorrect && consecutiveIncorrect.current >= 3) {
-      if (currentDifficulty === "medium") {
-        nextDifficulty = "easy";
-      } else if (currentDifficulty === "hard") {
-        nextDifficulty = "medium";
-      }
-      consecutiveIncorrect.current = 0;
-    } else if (isCorrect) {
-      if (currentDifficulty === "easy" && questions.medium.length > 0) {
-        nextDifficulty = "medium";
-      } else if (currentDifficulty === "medium" && questions.hard.length > 0) {
-        nextDifficulty = "hard";
-      }
-    }
-  
-    let nextQuestion = getNextQuestion(nextDifficulty);
-  
-    if (!nextQuestion) {
-      nextQuestion = getNextQuestion(currentDifficulty);
-    }
-  
-    if (nextQuestion) {
-      setCurrentQuestion(nextQuestion);
-      setCurrentDifficulty(nextDifficulty);
-      setTimeLeft(
-        nextDifficulty === "easy"
-          ? easyTime
-          : nextDifficulty === "medium"
-          ? mediumTime
-          : hardTime
+  const getNextQuestion = useCallback(
+    (difficulty) => {
+      const difficultyArray = questions[difficulty];
+      return difficultyArray.find(
+        (q) => !askedQuestions.current.has(q._id || q.question)
       );
-      askedQuestions.current.add(nextQuestion._id || nextQuestion.question);
-    } else {
+    },
+    [questions]
+  );
+
+  const handleNextQuestion = useCallback(
+    (isCorrect) => {
+      setQuestionsAsked((prev) => prev + 1);
+
+      if (questionsAsked >= testSize) {
+        submitResults();
+        setIsQuizComplete(true);
+        return;
+      }
+
+      let nextDifficulty = currentDifficulty;
+
+      if (!isCorrect && consecutiveIncorrect.current >= 3) {
+        if (currentDifficulty === "medium") {
+          nextDifficulty = "easy";
+        } else if (currentDifficulty === "hard") {
+          nextDifficulty = "medium";
+        }
+        consecutiveIncorrect.current = 0;
+      } else if (isCorrect) {
+        if (currentDifficulty === "easy" && questions.medium.length > 0) {
+          nextDifficulty = "medium";
+        } else if (
+          currentDifficulty === "medium" &&
+          questions.hard.length > 0
+        ) {
+          nextDifficulty = "hard";
+        }
+      }
+
+      let nextQuestion = getNextQuestion(nextDifficulty);
+
+      if (!nextQuestion) {
+        nextQuestion = getNextQuestion(currentDifficulty);
+      }
+
+      if (nextQuestion) {
+        setCurrentQuestion(nextQuestion);
+        setCurrentDifficulty(nextDifficulty);
+        setTimeLeft(
+          nextDifficulty === "easy"
+            ? easyTime
+            : nextDifficulty === "medium"
+            ? mediumTime
+            : hardTime
+        );
+        askedQuestions.current.add(nextQuestion._id || nextQuestion.question);
+      } else {
+        setIsQuizComplete(true);
+      }
+    },
+    [
+      questionsAsked,
+      testSize,
+      currentDifficulty,
+      questions,
+      easyTime,
+      mediumTime,
+      hardTime,
+      getNextQuestion,
+      submitResults,
+    ]
+  );
+
+  useEffect(() => {
+    if (!currentQuestion || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentQuestion, timeLeft]);
+
+  // 2. Handle when time runs out
+  useEffect(() => {
+    if (timeLeft !== 0) return;
+
+    if (questionsAsked  >= testSize) {
+      if (currentDifficulty === "easy") {
+        setEasyIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "medium") {
+        setMediumIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "hard") {
+        setHardIncorrect((prev) => prev + 1);
+      }
+
       setIsQuizComplete(true);
+      submitResults();
+    } else {
+      handleNextQuestion(false);
+      if (currentDifficulty === "easy") {
+        setEasyIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "medium") {
+        setMediumIncorrect((prev) => prev + 1);
+      } else if (currentDifficulty === "hard") {
+        setHardIncorrect((prev) => prev + 1);
+      }
     }
-  }, [
-    questionsAsked,
-    testSize,
-    currentDifficulty,
-    questions,
-    easyTime,
-    mediumTime,
-    hardTime,
-    getNextQuestion,
-    submitResults,
-  ]);
-
-  //HANDLEING IF TIME BECOMES 0.
-  // useEffect(() => {
-  //   if (timeLeft === 0) {
-  //     if(questionsAsked >= testSize){
-  //       console.log("hitting submit button on time end and last question ");
-  //       submitResults();
-  //       setIsQuizComplete(true); 
-  //     }
-  //     handleNextQuestion(false);
-  //     return;
-  //   }
-  //   if (currentQuestion && timeLeft > 0) {
-  //     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-  //     return () => clearInterval(timer);
-  //   }
-  // }, [currentQuestion, timeLeft, handleNextQuestion,testSize,questionsAsked,submitResults]);
-  // 1. Countdown timer - just handles ticking
-useEffect(() => {
-  if (!currentQuestion || timeLeft <= 0) return;
-
-  const timer = setInterval(() => {
-    setTimeLeft((prev) => prev - 1);
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, [currentQuestion, timeLeft]);
-
-// 2. Handle when time runs out
-useEffect(() => {
-  if (timeLeft !== 0) return;
-
-  if (questionsAsked >= testSize) {
-    submitResults();
-    setIsQuizComplete(true);
-  } else {
-    handleNextQuestion(false);
-  }
-}, [timeLeft]);
-
-
+  }, [timeLeft]);
 
   const handleAnswer = (optionText) => {
     // const isCorrect = optionText === currentQuestion.correct_option;
-    const isCorrect = optionText.trim().toLowerCase() === currentQuestion.correct_option.trim().toLowerCase();
+    const isCorrect =
+      optionText.trim().toLowerCase() ===
+      currentQuestion.correct_option.trim().toLowerCase();
 
     if (isCorrect) {
       // Increment score based on difficulty level
-      const marks = currentDifficulty === "easy" ? easyMarks
-        : currentDifficulty === "medium" ? mediumMarks
+      const marks =
+        currentDifficulty === "easy"
+          ? easyMarks
+          : currentDifficulty === "medium"
+          ? mediumMarks
           : hardMarks; // 3 for hard
       setScore((prev) => prev + marks);
       consecutiveIncorrect.current = 0; // Reset counter on correct answer
@@ -352,10 +367,7 @@ useEffect(() => {
       } else if (currentDifficulty === "hard") {
         setHardCorrect((prev) => prev + 1);
       }
-
-
     } else {
-
       // Increment incorrect answers count based on difficulty
       if (currentDifficulty === "easy") {
         setEasyIncorrect((prev) => prev + 1);
@@ -386,7 +398,6 @@ useEffect(() => {
         body: JSON.stringify({ email, feedback }),
       });
 
-
       const data = await response.json();
       if (data.success) {
         setIsFeedbackSubmitted(true);
@@ -398,12 +409,13 @@ useEffect(() => {
     } catch (error) {
       alert("Error submitting feedback: " + error.message);
     }
-
   };
 
   return (
     <div className="quiz-container mx-auto mt-10 max-w-3xl bg-white shadow-lg rounded-lg p-6">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Quiz</h1>
+      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+        Quiz
+      </h1>
       {!isQuizComplete ? (
         currentQuestion ? (
           <>
@@ -412,18 +424,25 @@ useEffect(() => {
                 Score: <span className="font-bold">{score}</span>
               </p>
               <p className="text-lg font-medium text-gray-700">
+                Incorrect: <span className="font-bold">{easyIncorrect}</span>
+              </p>
+              <p className="text-lg font-medium text-gray-700">
                 Time left: <span className="font-bold">{timeLeft}s</span>
               </p>
               <p className="text-lg font-medium text-gray-700">
-                Difficulty: <span className="font-bold">{currentDifficulty}</span>
+                Difficulty:{" "}
+                <span className="font-bold">{currentDifficulty}</span>
               </p>
               <p className="text-lg font-medium text-gray-700">
-                Questions Asked: <span className="font-bold">{questionsAsked}</span>
+                Questions Asked:{" "}
+                <span className="font-bold">{questionsAsked}</span>
               </p>
             </div>
 
             <div className="mb-6">
-              <p className="text-xl font-semibold text-gray-900">{currentQuestion.question}</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {currentQuestion.question}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -454,11 +473,15 @@ useEffect(() => {
             </div>
           </>
         ) : (
-          <p className="text-center text-lg text-gray-500">Loading question...</p>
+          <p className="text-center text-lg text-gray-500">
+            Loading question...
+          </p>
         )
       ) : (
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Quiz Complete!
+          </h2>
           <p className="text-lg font-medium text-gray-700 mb-4">
             Your Score: <span className="font-bold">{score}</span>
           </p>
@@ -476,16 +499,20 @@ useEffect(() => {
               <button
                 type="submit"
                 disabled={!feedback.trim()} // Disable if only spaces
-                className={`py-2 px-6 font-bold rounded-lg shadow transition duration-200 ${feedback.trim() ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                className={`py-2 px-6 font-bold rounded-lg shadow transition duration-200 ${
+                  feedback.trim()
+                    ? "bg-green-500 hover:bg-green-600 text-white"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
               >
                 Submit Feedback
               </button>
-              
             </form>
           ) : (
             <div>
-              <p className="text-green-600 font-medium">Thank you for your feedback!</p>
+              <p className="text-green-600 font-medium">
+                Thank you for your feedback!
+              </p>
               <br />
               <Link
                 href="/candidate/TestInstruction"
@@ -508,7 +535,7 @@ export async function getServerSideProps(context) {
   if (!session || session.user.role !== "employee") {
     return {
       redirect: {
-        destination: '/', // Replace with your sign-in page route
+        destination: "/", // Replace with your sign-in page route
         permanent: false,
       },
     };

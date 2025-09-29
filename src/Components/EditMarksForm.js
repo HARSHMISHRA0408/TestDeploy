@@ -1,8 +1,94 @@
-import { useState } from "react";
+// import { useState } from "react";
 
-function EditMarkForm({ mark, onClose, onMarkUpdate }) {
-  const [form, setForm] = useState({ level: mark.level, time: mark.time, marks: mark.marks });
+// function EditMarkForm({ mark, onClose, onMarkUpdate }) {
+//   const [form, setForm] = useState({ level: mark.level, time: mark.time, marks: mark.marks });
+//   const [message, setMessage] = useState("");
+
+//   const handleChange = (e) => {
+//     setForm({ ...form, [e.target.name]: e.target.value });
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     const res = await fetch("/api/marks", {
+//       method: "PUT",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ id: mark._id, ...form }),
+//     });
+
+//     const data = await res.json();
+//     if (data.success) {
+//       setMessage("Mark updated successfully");
+//       onMarkUpdate();
+//       onClose();
+//     } else {
+//       setMessage("Failed to update mark");
+//     }
+//   };
+
+//   return (
+//     <div className="mt-10 bg-white shadow rounded-lg p-6 max-w-md mx-auto">
+//       <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Edit Mark</h2>
+
+//       {message && (
+//         <p className={`text-center mb-4 ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>
+//           {message}
+//         </p>
+//       )}
+
+//       <form onSubmit={handleSubmit}>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 font-medium mb-2">Level:</label>
+//           <p className="w-full p-2 border rounded bg-gray-100 text-gray-700">{form.level}</p>
+//         </div>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 font-medium mb-2">Time (mins):</label>
+//           <input
+//             type="number"
+//             name="time"
+//             value={form.time}
+//             onChange={handleChange}
+//             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+//             required
+//           />
+//         </div>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 font-medium mb-2">Marks:</label>
+//           <input
+//             type="number"
+//             name="marks"
+//             value={form.marks}
+//             onChange={handleChange}
+//             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+//             required
+//           />
+//         </div>
+//         <div className="flex justify-between">
+//           <button type="submit" className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all">
+//             Save Changes
+//           </button>
+//           <button type="button" onClick={onClose} className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all">
+//             Cancel
+//           </button>
+//         </div>
+//       </form>
+//     </div>
+//   );
+// }
+
+// export default EditMarkForm;
+
+import { useState, useEffect } from "react";
+
+export default function EditMarkForm({ mark, onClose, onMarkUpdate }) {
+  const [form, setForm] = useState({ level: "", time: "", marks: "" });
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (mark) {
+      setForm({ level: mark.level, time: mark.time, marks: mark.marks });
+    }
+  }, [mark]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,60 +106,94 @@ function EditMarkForm({ mark, onClose, onMarkUpdate }) {
     if (data.success) {
       setMessage("Mark updated successfully");
       onMarkUpdate();
-      onClose();
+      setTimeout(() => onClose(), 1000);
     } else {
       setMessage("Failed to update mark");
     }
   };
 
   return (
-    <div className="mt-10 bg-white shadow rounded-lg p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Edit Mark</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6 relative">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
 
-      {message && (
-        <p className={`text-center mb-4 ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>
-          {message}
-        </p>
-      )}
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+          Edit Mark
+        </h2>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Level:</label>
-          <p className="w-full p-2 border rounded bg-gray-100 text-gray-700">{form.level}</p>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Time (mins):</label>
-          <input
-            type="number"
-            name="time"
-            value={form.time}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">Marks:</label>
-          <input
-            type="number"
-            name="marks"
-            value={form.marks}
-            onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            required
-          />
-        </div>
-        <div className="flex justify-between">
-          <button type="submit" className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all">
-            Save Changes
-          </button>
-          <button type="button" onClick={onClose} className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all">
-            Cancel
-          </button>
-        </div>
-      </form>
+        {message && (
+          <p
+            className={`text-center mb-4 ${
+              message.includes("successfully") ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          {/* Level */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">Level:</label>
+            <p className="w-full p-2 border rounded bg-gray-100 text-gray-700">
+              {form.level}
+            </p>
+          </div>
+
+          {/* Time */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">
+              Time (mins):
+            </label>
+            <input
+              type="number"
+              name="time"
+              value={form.time}
+              onChange={handleChange}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              required
+            />
+          </div>
+
+          {/* Marks */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">
+              Marks:
+            </label>
+            <input
+              type="number"
+              name="marks"
+              value={form.marks}
+              onChange={handleChange}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              required
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-400 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
-
-export default EditMarkForm;

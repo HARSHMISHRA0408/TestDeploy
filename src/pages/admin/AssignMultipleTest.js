@@ -3,7 +3,7 @@ import axios from "axios"; // Use axios for all API calls
 import Layout from "./Layout";
 import { getSession } from "next-auth/react";
 
-const AssignTest = () => {
+const AssignTest = ({ user }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,7 +96,7 @@ const AssignTest = () => {
   };
 
   return (
-    <Layout>
+    <Layout user={user}>
       <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Assign Test to Users</h2>
 
